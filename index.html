@@ -41,14 +41,23 @@
   .none{color:var(--muted);font-style:italic}
   .legend{font-size:12px;color:var(--muted);margin-top:22px;display:flex;gap:16px;flex-wrap:wrap}
   .legend span{display:inline-flex;align-items:center;gap:6px}
+  .qimg{margin:0 0 16px;text-align:center;display:none}
+  .qimg img{max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:8px}
+  .reveal .rimg{margin-top:12px;text-align:center}
+  .reveal .rimg img{max-width:100%;max-height:280px;border:1px solid var(--line);border-radius:8px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Drill CLI - Windows / Linux</h1>
-  <div class="sub">On part du besoin, tu retrouves l'outil. A la correction, le nom en clair (FR) et son acronyme (EN) s'affichent. Score de session (remis a zero si tu fermes l'onglet).</div>
+  <div class="sub">On part du besoin, tu retrouves l'outil. A la correction, le nom en clair (FR) et son acronyme (EN) s'affichent. Modes image : panneau avec titre (retrouver la commande) ou masque (retrouver nom + commande). Score de session (remis a zero si tu fermes l'onglet).</div>
 
   <div class="bar">
+    <select id="mode">
+      <option value="text">Besoin (texte)</option>
+      <option value="full">Image + titre</option>
+      <option value="mask">Image masquee</option>
+    </select>
     <select id="cat"></select>
     <button id="btnReset">Melanger</button>
     <button id="btnMissed">Refaire les ratees</button>
@@ -57,6 +66,7 @@
 
   <div class="card">
     <div class="cat" id="qcat">categorie<span class="dot" id="qdot"></span></div>
+    <div class="qimg" id="qimg"></div>
     <div class="need" id="need">...</div>
 
     <div class="field">
@@ -139,20 +149,20 @@ const DATA = [
 
  {cat:"Reseau", color:"vert", name:"Connexions reseau (cartes)", en:"Network Connections",
   need:"Ouvrir les cartes reseau (activer / desactiver une interface).",
-  win:["ncpa.cpl"], winShow:"ncpa.cpl",
+  win:["ncpa.cpl"], winShow:"ncpa.cpl", img:"connexions_reseaux",
   linux:{none:true},
   tip:"Panneau Connexions reseau. Equivalent CLI Linux : ip link set."},
 
  {cat:"Reseau", color:"vert", name:"Parametres reseau (profil Public/Prive)",
   need:"Basculer le profil reseau entre Public et Prive.",
-  win:["ms-settings:network"], winShow:"ms-settings:network",
+  win:["ms-settings:network"], winShow:"ms-settings:network", img:"reseau_et_internet",
   linux:{none:true},
   tip:"Parametres > Reseau. Impacte les regles du pare-feu selon le profil."},
 
  // --- Systeme / materiel ---
  {cat:"Systeme / materiel", color:"jaune", name:"Gestion des disques", en:"Disk Management",
   need:"Gerer les disques et partitions (creer, formater, assigner une lettre).",
-  win:["diskmgmt.msc"], winShow:"diskmgmt.msc",
+  win:["diskmgmt.msc"], winShow:"diskmgmt.msc", img:"gestion_des_disques",
   linux:{acc:["lsblk"], show:"lsblk (+ fdisk / parted pour agir)"},
   tip:"lsblk liste les blocs ; l'action se fait avec fdisk/parted."},
 
@@ -164,25 +174,25 @@ const DATA = [
 
  {cat:"Systeme / materiel", color:"rose", name:"Informations systeme (materiel)", en:"Microsoft System Information",
   need:"Consulter un rapport materiel (CPU, RAM, disques) sans rien modifier.",
-  win:["msinfo32"], winShow:"msinfo32",
+  win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",
   linux:{acc:["lscpu","free -h","lsblk"], show:"lscpu  +  lsblk  +  free -h"},
   tip:"msinfo32 = consultation pure, on ne modifie rien."},
 
  {cat:"Systeme / materiel", color:"vert", name:"Proprietes systeme", en:"System Properties",
   need:"Renommer le PC, le joindre a un domaine (proprietes systeme, on agit).",
-  win:["sysdm.cpl"], winShow:"sysdm.cpl",
+  win:["sysdm.cpl"], winShow:"sysdm.cpl", img:"proprietes_systeme",
   linux:{none:true},
   tip:"Console d'action, a l'inverse de msinfo32 (on consulte)."},
 
  {cat:"Systeme / materiel", color:"rose", name:"Gestionnaire de peripheriques", en:"Device Management",
   need:"Ouvrir le gestionnaire de peripheriques (pilotes, materiel detecte).",
-  win:["devmgmt.msc"], winShow:"devmgmt.msc",
+  win:["devmgmt.msc"], winShow:"devmgmt.msc", img:"gestionnaire_de_peripheriques",
   linux:{acc:["lshw -short","sudo lshw -short","lspci","lsusb"], show:"lshw -short"},
   tip:""},
 
  {cat:"Systeme / materiel", color:"rose", name:"A propos de Windows (version)", en:"Windows Version",
   need:"Afficher la version exacte de Windows installee.",
-  win:["winver"], winShow:"winver",
+  win:["winver"], winShow:"winver", img:"a_propos_de_windows",
   linux:{acc:["cat /etc/os-release","lsb_release -a"], show:"lsb_release -a  (ou /etc/os-release)"},
   tip:"Petite fenetre 'A propos', juste la version."},
 
@@ -201,13 +211,13 @@ const DATA = [
 
  {cat:"Diagnostic / process", color:"jaune", name:"Gestionnaire des taches", en:"Task Manager",
   need:"Ouvrir un moniteur temps reel des process ET des ressources (CPU, RAM, disque, reseau).",
-  win:["taskmgr"], winShow:"taskmgr",
+  win:["taskmgr"], winShow:"taskmgr", img:"gestionnaire_des_taches",
   linux:{acc:["htop","top"], show:"htop"},
   tip:"Bien plus large que services.msc : ici on voit l'usage des ressources, pas que les services."},
 
  {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'evenements", en:"Event Viewer",
   need:"Consulter les journaux d'evenements (logs systeme).",
-  win:["eventvwr.msc"], winShow:"eventvwr.msc",
+  win:["eventvwr.msc"], winShow:"eventvwr.msc", img:"observateur_d_evenements",
   linux:{acc:["journalctl","journalctl -p err -b"], show:"journalctl"},
   tip:"Onglet Securite = Event ID 4624 (connexion reussie) / 4625 (echec). Cle pour l'audit."},
 
@@ -232,13 +242,13 @@ const DATA = [
 
  {cat:"Comptes / services", color:"vert", name:"Utilisateurs et groupes locaux", en:"Local Users Manager",
   need:"Ouvrir la console de gestion des comptes et groupes locaux.",
-  win:["lusrmgr.msc"], winShow:"lusrmgr.msc",
+  win:["lusrmgr.msc"], winShow:"lusrmgr.msc", img:"utilisateurs_et_groupes_locaux",
   linux:{none:true},
   tip:"Cote Linux, tout passe par la CLI : useradd, usermod, passwd."},
 
  {cat:"Comptes / services", color:"rose", name:"Services (demons systeme)",
   need:"Gerer les services / demons du systeme (demarrer, arreter, etat), y compris ceux a l'arret.",
-  win:["services.msc"], winShow:"services.msc",
+  win:["services.msc"], winShow:"services.msc", img:"services",
   linux:{acc:["systemctl","systemctl list-units","systemctl status"], show:"systemctl (list-units / status)"},
   tip:"Uniquement les demons systeme. Montre aussi les services stoppes, contrairement au gestionnaire des taches."},
 
@@ -263,36 +273,39 @@ const DATA = [
 
  {cat:"Maintenance / admin", color:"vert", name:"Nettoyage de disque", en:"clean manager",
   need:"Lancer le nettoyage de disque (fichiers temporaires, corbeille...).",
-  win:["cleanmgr"], winShow:"cleanmgr",
+  win:["cleanmgr"], winShow:"cleanmgr", img:"nettoyage_de_disque",
   linux:{none:true},
   tip:""},
 
  {cat:"Maintenance / admin", color:"vert", name:"Options d'alimentation", en:"Power Configuration",
   need:"Ouvrir les options d'alimentation (mode d'alimentation, mise en veille, comportement du bouton marche).",
-  win:["powercfg.cpl"], winShow:"powercfg.cpl",
+  win:["powercfg.cpl"], winShow:"powercfg.cpl", img:"options_d_alimentation",
   linux:{none:true},
   tip:"Panneau pur. Le vrai interet : savoir que 'Options d'alimentation' = powercfg.cpl. Cote Linux : powertop / tlp."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (regles avancees)", en:"Windows Firewall",
   need:"Ouvrir le pare-feu avec regles de trafic entrant / sortant.",
-  win:["wf.msc"], winShow:"wf.msc",
+  win:["wf.msc"], winShow:"wf.msc", img:"pare_feu_windows_defender",
   linux:{none:true},
   tip:"Regles fines. Equivalents Linux : ufw / iptables / nftables."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Programmes et fonctionnalites (desinstaller)", en:"Application Wizard",
   need:"Ouvrir l'ajout / suppression de programmes pour desinstaller ou modifier un logiciel.",
-  win:["appwiz.cpl"], winShow:"appwiz.cpl",
+  win:["appwiz.cpl"], winShow:"appwiz.cpl", img:"programmes_et_fonctionnalites",
   linux:{none:true},
   tip:"Panneau pur. Cote Linux : apt remove."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Connexion Bureau a distance", en:"Microsoft Terminal Services Client",
   need:"Lancer une connexion Bureau a distance vers une autre machine.",
-  win:["mstsc"], winShow:"mstsc",
+  win:["mstsc"], winShow:"mstsc", img:"connexion_bureau_a_distance",
   linux:{none:true},
   tip:"RDP, port 3389 (a bien retenir). Cote Linux : xfreerdp / rdesktop."}
 ];
 
 // ---- Logique ----
+const IMG_DIR = "images/";
+const imgFull = q => q.img ? IMG_DIR + q.img + ".png" : null;
+const imgMask = q => q.img ? IMG_DIR + q.img + "_masquee.png" : null;
 const norm = s => (s||"").toLowerCase().replace(/\s+/g," ").trim();
 const dotColor = c => c==="jaune"?"var(--jaune)":c==="rose"?"var(--rose)":"var(--vert)";
 
@@ -312,7 +325,10 @@ function loadPool(list){
 }
 function currentList(){
   const c=el("cat").value;
-  return c==="Toutes"?DATA:DATA.filter(d=>d.cat===c);
+  let list = c==="Toutes"?DATA:DATA.filter(d=>d.cat===c);
+  const mode=el("mode").value;
+  if(mode==="full"||mode==="mask") list=list.filter(d=>d.img);
+  return list;
 }
 
 function render(){
@@ -328,13 +344,29 @@ function render(){
     el("need").innerHTML=`Score du tour : <b>${correct}/${done}</b>.` + (missed.length?` ${missed.length} a refaire (bouton "Refaire les ratees").`:" Sans faute !");
     el("linuxField").style.display="none";
     el("win").style.display="none";
+    el("qimg").style.display="none";
     return;
   }
   el("win").style.display="block";
   const q=pool[idx];
   el("qcat").firstChild.textContent=q.cat+" ";
   el("qdot").style.background=dotColor(q.color);
-  el("need").textContent=q.need;
+  const mode=el("mode").value;
+  const qimg=el("qimg");
+  if((mode==="full"||mode==="mask") && q.img){
+    const src = mode==="mask"?imgMask(q):imgFull(q);
+    qimg.innerHTML=`<img src="${src}" alt="panneau" onerror="this.parentNode.style.display='none'">`;
+    qimg.style.display="block";
+  } else {
+    qimg.innerHTML=""; qimg.style.display="none";
+  }
+  if(mode==="text"){
+    el("need").textContent=q.need;
+  } else {
+    el("need").textContent = mode==="mask"
+      ? "Quel panneau ? Retrouve son nom (a la correction) et tape la commande."
+      : "Quelle commande ouvre ce panneau ?";
+  }
   if(q.linux && q.linux.none){
     el("linuxField").style.display="block";
     el("lin").disabled=true; el("lin").value=""; el("lin").placeholder="aucun equivalent CLI (panneau graphique)";
@@ -374,12 +406,15 @@ function showReveal(q, mode){
   const lin = (q.linux&&q.linux.none)?`<span class="none">aucun (panneau graphique)</span>`:`<code>${q.linux.show}</code>`;
   const en = q.en?`<span class="en">${q.en}</span>`:"";
   const head = mode==='ok'?"Juste.":mode==='reveal'?"Reponse :":"Attendu :";
+  // image complete (avec titre) a la correction, sauf si elle est deja affichee en question
+  const rimg = (q.img && el("mode").value!=="full")
+    ? `<div class="rimg"><img src="${imgFull(q)}" alt="${q.name}" onerror="this.parentNode.style.display='none'"></div>` : "";
   el("reveal").innerHTML =
     `<div><b>${head}</b></div>
      <div class="name">${q.name}${en}</div>
      <div>Windows : <code>${q.winShow}</code></div>
      <div>Linux : ${lin}</div>` +
-    (q.tip?`<div class="tip">${q.tip}</div>`:"");
+    (q.tip?`<div class="tip">${q.tip}</div>`:"") + rimg;
   el("reveal").className="reveal show";
 }
 function next(){
@@ -394,6 +429,7 @@ el("btnReveal").onclick=reveal;
 el("btnNext").onclick=next;
 el("btnReset").onclick=()=>loadPool(currentList());
 el("cat").onchange=()=>loadPool(currentList());
+el("mode").onchange=()=>loadPool(currentList());
 el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice()); };
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"){ if(answered) next(); else check(); } });
 

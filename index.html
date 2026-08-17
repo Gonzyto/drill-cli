@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drill CLI - Windows / Linux</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --line:#2a2f3a; --txt:#e6e9ef; --muted:#9aa3b2;
+    --ok:#3fb950; --ko:#f85149; --accent:#58a6ff;
+    --jaune:#d9b400; --rose:#e06c9f; --vert:#3fb950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 18px 60px}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+  select,button{font:inherit;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#0b0d11;border-color:var(--accent);font-weight:600}
+  .score{margin-left:auto;color:var(--muted);font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .cat{display:inline-block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:6px;vertical-align:middle}
+  .need{font-size:17px;margin:0 0 18px}
+  .field{margin-bottom:12px}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input{width:100%;font:inherit;background:#0f1319;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:ui-monospace,Consolas,monospace}
+  input:focus{outline:none;border-color:var(--accent)}
+  input.ok{border-color:var(--ok);background:#122015}
+  input.ko{border-color:var(--ko);background:#20120f}
+  input:disabled{opacity:.5}
+  .actions{display:flex;gap:8px;margin-top:16px}
+  .reveal{margin-top:16px;padding:14px;border-radius:10px;background:#0f1319;border:1px solid var(--line);font-size:14px;display:none}
+  .reveal.show{display:block}
+  .reveal code{font-family:ui-monospace,Consolas,monospace;color:var(--accent)}
+  .reveal .name{font-size:16px;font-weight:600;margin:4px 0 12px}
+  .reveal .en{font-weight:400;font-size:12px;color:var(--muted);font-style:italic;margin-left:8px}
+  .reveal .tip{color:var(--muted);margin-top:10px;font-size:13px}
+  .none{color:var(--muted);font-style:italic}
+  .legend{font-size:12px;color:var(--muted);margin-top:22px;display:flex;gap:16px;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Drill CLI - Windows / Linux</h1>
+  <div class="sub">On part du besoin, tu retrouves l'outil. A la correction, le nom en clair (FR) et son acronyme (EN) s'affichent. Score de session (remis a zero si tu fermes l'onglet).</div>
+
+  <div class="bar">
+    <select id="cat"></select>
+    <button id="btnReset">Melanger</button>
+    <button id="btnMissed">Refaire les ratees</button>
+    <div class="score" id="score">0 / 0</div>
+  </div>
+
+  <div class="card">
+    <div class="cat" id="qcat">categorie<span class="dot" id="qdot"></span></div>
+    <div class="need" id="need">...</div>
+
+    <div class="field">
+      <label>Windows</label>
+      <input id="win" autocomplete="off" spellcheck="false" placeholder="ta commande Windows">
+    </div>
+    <div class="field" id="linuxField">
+      <label>Linux</label>
+      <input id="lin" autocomplete="off" spellcheck="false" placeholder="ta commande Linux">
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="btnCheck">Verifier</button>
+      <button id="btnReveal">Reveler</button>
+      <button id="btnNext">Suivant</button>
+    </div>
+
+    <div class="reveal" id="reveal"></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:var(--jaune)"></span>jaune : paire quasi 1-pour-1</span>
+    <span><span class="dot" style="background:var(--rose)"></span>rose : equivalence recomposee</span>
+    <span><span class="dot" style="background:var(--vert)"></span>vert : pas d'equivalent CLI (panneau)</span>
+  </div>
+</div>
+
+<script>
+// ---- Banque, tiree du socle de Benjamin (fiches du 4 aout) ----
+// color: 'jaune' | 'rose' | 'vert'   name: titre FR en clair   en: acronyme anglais (optionnel)
+// linux: {none:true} si aucun equivalent CLI
+const DATA = [
+ {cat:"Reseau", color:"jaune", name:"Connexions reseau (actives / en ecoute)", en:"network statistics",
+  need:"Voir toutes les connexions actives et en ecoute, avec le port, le PID et le process qui tient chaque connexion.",
+  win:["netstat -anob","netstat -anbo","netstat -aob","netstat -abno","netstat -ano"], winShow:"netstat -anob",
+  linux:{acc:["ss -tunlp","ss -tulnp","ss -tnulp","ss -plunt"], show:"ss -tunlp"},
+  tip:"Pilier investigation : qui parle avec qui. 0.0.0.0 en LISTENING = toutes interfaces."},
+
+ {cat:"Reseau", color:"jaune", name:"Interroger le DNS (nom -> IP)", en:"name server lookup",
+  need:"Interroger le DNS pour obtenir l'IP derriere un nom (sans tester la machine).",
+  win:["nslookup","nslookup wikipedia.fr"], winShow:"nslookup <nom>",
+  linux:{acc:["nslookup","dig","host"], show:"nslookup <nom> (ou dig / host)"},
+  tip:"Teste le resolveur de noms, pas la connectivite. A distinguer du ping."},
+
+ {cat:"Reseau", color:"rose", name:"Config IP complete", en:"IP configuration",
+  need:"Afficher toute ta config reseau en detail : IP, passerelle, DNS, MAC.",
+  win:["ipconfig /all","ipconfig/all"], winShow:"ipconfig /all",
+  linux:{acc:["ip addr","ip a","ip address","ip addr; ip route","ip a && ip route"], show:"ip addr  +  ip route"},
+  tip:"Cote Linux c'est recompose : ip addr pour les interfaces, ip route pour la passerelle."},
+
+ {cat:"Reseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
+  need:"Vider le cache DNS local de la machine.",
+  win:["ipconfig /flushdns","ipconfig/flushdns"], winShow:"ipconfig /flushdns",
+  linux:{acc:["resolvectl flush-caches","sudo resolvectl flush-caches","systemd-resolve --flush-caches","sudo systemd-resolve --flush-caches"], show:"resolvectl flush-caches"},
+  tip:"Meme famille que /displaydns qui, lui, affiche le cache."},
+
+ {cat:"Reseau", color:"jaune", name:"Afficher le cache DNS", en:"display DNS",
+  need:"Afficher le contenu du cache DNS local (ce que la machine a deja resolu).",
+  win:["ipconfig /displaydns","ipconfig/displaydns"], winShow:"ipconfig /displaydns",
+  linux:{acc:["resolvectl statistics","sudo systemd-resolve --statistics"], show:"resolvectl statistics"},
+  tip:"Pour voir, pas pour vider. /flushdns pour vider."},
+
+ {cat:"Reseau", color:"jaune", name:"Tester la connectivite", en:"ping",
+  need:"Tester si une machine distante repond (envoi ICMP echo request).",
+  win:["ping","ping 8.8.8.8"], winShow:"ping <hote>",
+  linux:{acc:["ping","ping 8.8.8.8"], show:"ping <hote>"},
+  tip:"ICMP, couche 3, sans handshake ni etat de connexion (contrairement a TCP). La machine repond par un ICMP echo reply."},
+
+ {cat:"Reseau", color:"jaune", name:"Itineraire / chemin emprunte", en:"trace route",
+  need:"Afficher le chemin (chaque routeur traverse) emprunte pour atteindre un hote.",
+  win:["tracert","tracert 8.8.8.8"], winShow:"tracert <hote>",
+  linux:{acc:["traceroute","tracepath"], show:"traceroute <hote>"},
+  tip:"Chaque ligne = un saut (un routeur) sur le trajet."},
+
+ {cat:"Reseau", color:"rose", name:"Table de routage",
+  need:"Afficher la table de routage de la machine (par ou sort le trafic).",
+  win:["route print"], winShow:"route print",
+  linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
+  tip:"On y lit notamment la passerelle par defaut (0.0.0.0)."},
+
+ {cat:"Reseau", color:"vert", name:"Connexions reseau (cartes)", en:"Network Connections",
+  need:"Ouvrir les cartes reseau (activer / desactiver une interface).",
+  win:["ncpa.cpl"], winShow:"ncpa.cpl",
+  linux:{none:true},
+  tip:"Panneau Connexions reseau. Equivalent CLI Linux : ip link set."},
+
+ {cat:"Reseau", color:"vert", name:"Parametres reseau (profil Public/Prive)",
+  need:"Basculer le profil reseau entre Public et Prive.",
+  win:["ms-settings:network"], winShow:"ms-settings:network",
+  linux:{none:true},
+  tip:"Parametres > Reseau. Impacte les regles du pare-feu selon le profil."},
+
+ // --- Systeme / materiel ---
+ {cat:"Systeme / materiel", color:"jaune", name:"Gestion des disques", en:"Disk Management",
+  need:"Gerer les disques et partitions (creer, formater, assigner une lettre).",
+  win:["diskmgmt.msc"], winShow:"diskmgmt.msc",
+  linux:{acc:["lsblk"], show:"lsblk (+ fdisk / parted pour agir)"},
+  tip:"lsblk liste les blocs ; l'action se fait avec fdisk/parted."},
+
+ {cat:"Systeme / materiel", color:"rose", name:"Inventaire systeme complet", en:"system info",
+  need:"Sortir un resume systeme complet (OS, version, uptime, materiel de base).",
+  win:["systeminfo"], winShow:"systeminfo",
+  linux:{acc:["uname -a","cat /etc/os-release","uptime"], show:"uname -a  +  /etc/os-release  +  uptime"},
+  tip:"Recompose cote Linux : une commande par info."},
+
+ {cat:"Systeme / materiel", color:"rose", name:"Informations systeme (materiel)", en:"Microsoft System Information",
+  need:"Consulter un rapport materiel (CPU, RAM, disques) sans rien modifier.",
+  win:["msinfo32"], winShow:"msinfo32",
+  linux:{acc:["lscpu","free -h","lsblk"], show:"lscpu  +  lsblk  +  free -h"},
+  tip:"msinfo32 = consultation pure, on ne modifie rien."},
+
+ {cat:"Systeme / materiel", color:"vert", name:"Proprietes systeme", en:"System Properties",
+  need:"Renommer le PC, le joindre a un domaine (proprietes systeme, on agit).",
+  win:["sysdm.cpl"], winShow:"sysdm.cpl",
+  linux:{none:true},
+  tip:"Console d'action, a l'inverse de msinfo32 (on consulte)."},
+
+ {cat:"Systeme / materiel", color:"rose", name:"Gestionnaire de peripheriques", en:"Device Management",
+  need:"Ouvrir le gestionnaire de peripheriques (pilotes, materiel detecte).",
+  win:["devmgmt.msc"], winShow:"devmgmt.msc",
+  linux:{acc:["lshw -short","sudo lshw -short","lspci","lsusb"], show:"lshw -short"},
+  tip:""},
+
+ {cat:"Systeme / materiel", color:"rose", name:"A propos de Windows (version)", en:"Windows Version",
+  need:"Afficher la version exacte de Windows installee.",
+  win:["winver"], winShow:"winver",
+  linux:{acc:["cat /etc/os-release","lsb_release -a"], show:"lsb_release -a  (ou /etc/os-release)"},
+  tip:"Petite fenetre 'A propos', juste la version."},
+
+ // --- Diagnostic / process ---
+ {cat:"Diagnostic / process", color:"jaune", name:"Liste des processus", en:"task list",
+  need:"Lister les processus en cours d'execution.",
+  win:["tasklist"], winShow:"tasklist",
+  linux:{acc:["ps aux","ps -aux","ps -ef"], show:"ps aux"},
+  tip:""},
+
+ {cat:"Diagnostic / process", color:"jaune", name:"Terminer un processus", en:"task kill",
+  need:"Tuer un processus a partir de son PID.",
+  win:["taskkill /pid","taskkill /pid 1234","taskkill /pid 1234 /f"], winShow:"taskkill /PID <n> /F",
+  linux:{acc:["kill","kill 1234","kill -9 1234"], show:"kill <PID>"},
+  tip:""},
+
+ {cat:"Diagnostic / process", color:"jaune", name:"Gestionnaire des taches", en:"Task Manager",
+  need:"Ouvrir un moniteur temps reel des process ET des ressources (CPU, RAM, disque, reseau).",
+  win:["taskmgr"], winShow:"taskmgr",
+  linux:{acc:["htop","top"], show:"htop"},
+  tip:"Bien plus large que services.msc : ici on voit l'usage des ressources, pas que les services."},
+
+ {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'evenements", en:"Event Viewer",
+  need:"Consulter les journaux d'evenements (logs systeme).",
+  win:["eventvwr.msc"], winShow:"eventvwr.msc",
+  linux:{acc:["journalctl","journalctl -p err -b"], show:"journalctl"},
+  tip:"Onglet Securite = Event ID 4624 (connexion reussie) / 4625 (echec). Cle pour l'audit."},
+
+ {cat:"Diagnostic / process", color:"jaune", name:"Filtrer une sortie (grep de Windows)", en:"find string",
+  need:"Filtrer une sortie de commande sur un motif (l'equivalent de grep sous Windows).",
+  win:["findstr","findstr /i"], winShow:"findstr /I <motif>",
+  linux:{acc:["grep","grep -i"], show:"grep <motif>"},
+  tip:""},
+
+ // --- Comptes / services ---
+ {cat:"Comptes / services", color:"jaune", name:"Utilisateur courant et groupes", en:"who am I",
+  need:"Afficher l'utilisateur courant et ses groupes.",
+  win:["whoami /groups","whoami/groups"], winShow:"whoami /groups",
+  linux:{acc:["id","groups"], show:"id  (ou groups)"},
+  tip:""},
+
+ {cat:"Comptes / services", color:"jaune", name:"Comptes locaux",
+  need:"Lister ou creer des comptes utilisateurs locaux.",
+  win:["net user"], winShow:"net user",
+  linux:{acc:["cat /etc/passwd","getent passwd"], show:"getent passwd  (ou cat /etc/passwd)"},
+  tip:""},
+
+ {cat:"Comptes / services", color:"vert", name:"Utilisateurs et groupes locaux", en:"Local Users Manager",
+  need:"Ouvrir la console de gestion des comptes et groupes locaux.",
+  win:["lusrmgr.msc"], winShow:"lusrmgr.msc",
+  linux:{none:true},
+  tip:"Cote Linux, tout passe par la CLI : useradd, usermod, passwd."},
+
+ {cat:"Comptes / services", color:"rose", name:"Services (demons systeme)",
+  need:"Gerer les services / demons du systeme (demarrer, arreter, etat), y compris ceux a l'arret.",
+  win:["services.msc"], winShow:"services.msc",
+  linux:{acc:["systemctl","systemctl list-units","systemctl status"], show:"systemctl (list-units / status)"},
+  tip:"Uniquement les demons systeme. Montre aussi les services stoppes, contrairement au gestionnaire des taches."},
+
+ // --- Maintenance / admin ---
+ {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers systeme", en:"System File Checker",
+  need:"Verifier et reparer les fichiers systeme corrompus de Windows.",
+  win:["sfc /scannow","sfc/scannow"], winShow:"sfc /scannow",
+  linux:{acc:["apt install --reinstall","sudo apt install --reinstall"], show:"apt install --reinstall <paquet>"},
+  tip:"Nuance : cote Linux il faut connaitre le paquet fautif, pas de scan auto."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Mettre a jour les strategies de groupe", en:"Group Policy Update",
+  need:"Forcer l'application immediate des strategies de groupe (GPO).",
+  win:["gpupdate /force","gpupdate/force"], winShow:"gpupdate /force",
+  linux:{none:true},
+  tip:"Specifique a l'univers Active Directory."},
+
+ {cat:"Maintenance / admin", color:"rose", name:"Verifier la sante du disque", en:"check disk",
+  need:"Verifier et reparer un disque (secteurs, systeme de fichiers).",
+  win:["chkdsk"], winShow:"chkdsk",
+  linux:{acc:["fsck"], show:"fsck"},
+  tip:"Nuance : fsck exige un demontage manuel, chkdsk le gere."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Nettoyage de disque", en:"clean manager",
+  need:"Lancer le nettoyage de disque (fichiers temporaires, corbeille...).",
+  win:["cleanmgr"], winShow:"cleanmgr",
+  linux:{none:true},
+  tip:""},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Options d'alimentation", en:"Power Configuration",
+  need:"Ouvrir les options d'alimentation (mode d'alimentation, mise en veille, comportement du bouton marche).",
+  win:["powercfg.cpl"], winShow:"powercfg.cpl",
+  linux:{none:true},
+  tip:"Panneau pur. Le vrai interet : savoir que 'Options d'alimentation' = powercfg.cpl. Cote Linux : powertop / tlp."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (regles avancees)", en:"Windows Firewall",
+  need:"Ouvrir le pare-feu avec regles de trafic entrant / sortant.",
+  win:["wf.msc"], winShow:"wf.msc",
+  linux:{none:true},
+  tip:"Regles fines. Equivalents Linux : ufw / iptables / nftables."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Programmes et fonctionnalites (desinstaller)", en:"Application Wizard",
+  need:"Ouvrir l'ajout / suppression de programmes pour desinstaller ou modifier un logiciel.",
+  win:["appwiz.cpl"], winShow:"appwiz.cpl",
+  linux:{none:true},
+  tip:"Panneau pur. Cote Linux : apt remove."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Connexion Bureau a distance", en:"Microsoft Terminal Services Client",
+  need:"Lancer une connexion Bureau a distance vers une autre machine.",
+  win:["mstsc"], winShow:"mstsc",
+  linux:{none:true},
+  tip:"RDP, port 3389 (a bien retenir). Cote Linux : xfreerdp / rdesktop."}
+];
+
+// ---- Logique ----
+const norm = s => (s||"").toLowerCase().replace(/\s+/g," ").trim();
+const dotColor = c => c==="jaune"?"var(--jaune)":c==="rose"?"var(--rose)":"var(--vert)";
+
+let pool=[], idx=0, correct=0, done=0, missed=[], answered=false;
+const el = id => document.getElementById(id);
+
+function buildCatSelect(){
+  const cats=["Toutes",...[...new Set(DATA.map(d=>d.cat))]];
+  el("cat").innerHTML=cats.map(c=>`<option>${c}</option>`).join("");
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function loadPool(list){
+  pool=shuffle(list.slice());
+  idx=0; correct=0; done=0; missed=[];
+  render();
+}
+function currentList(){
+  const c=el("cat").value;
+  return c==="Toutes"?DATA:DATA.filter(d=>d.cat===c);
+}
+
+function render(){
+  answered=false;
+  el("reveal").className="reveal";
+  el("win").value=""; el("win").className="";
+  el("lin").value=""; el("lin").className="";
+  el("win").disabled=false;
+  if(!pool.length){el("need").textContent="Aucune carte."; return;}
+  if(idx>=pool.length){
+    el("qcat").firstChild.textContent="Tour termine ";
+    el("qdot").style.background="transparent";
+    el("need").innerHTML=`Score du tour : <b>${correct}/${done}</b>.` + (missed.length?` ${missed.length} a refaire (bouton "Refaire les ratees").`:" Sans faute !");
+    el("linuxField").style.display="none";
+    el("win").style.display="none";
+    return;
+  }
+  el("win").style.display="block";
+  const q=pool[idx];
+  el("qcat").firstChild.textContent=q.cat+" ";
+  el("qdot").style.background=dotColor(q.color);
+  el("need").textContent=q.need;
+  if(q.linux && q.linux.none){
+    el("linuxField").style.display="block";
+    el("lin").disabled=true; el("lin").value=""; el("lin").placeholder="aucun equivalent CLI (panneau graphique)";
+  }else{
+    el("linuxField").style.display="block";
+    el("lin").disabled=false; el("lin").placeholder="ta commande Linux";
+  }
+  el("win").focus();
+  updateScore();
+}
+function updateScore(){el("score").textContent=`${correct} / ${done}`;}
+
+function check(){
+  if(answered) return;
+  const q=pool[idx];
+  const winOk = q.win.map(norm).includes(norm(el("win").value));
+  let linOk=true;
+  if(q.linux && !q.linux.none){
+    linOk = q.linux.acc.map(norm).includes(norm(el("lin").value));
+  }
+  el("win").className = winOk?"ok":"ko";
+  if(q.linux && !q.linux.none) el("lin").className = linOk?"ok":"ko";
+  const allOk = winOk && linOk;
+  answered=true; done++;
+  if(allOk) correct++; else missed.push(q);
+  showReveal(q, allOk?'ok':'ko');
+  updateScore();
+}
+function reveal(){
+  if(answered) return;
+  const q=pool[idx];
+  answered=true; done++; missed.push(q);
+  showReveal(q,'reveal');
+  updateScore();
+}
+function showReveal(q, mode){
+  const lin = (q.linux&&q.linux.none)?`<span class="none">aucun (panneau graphique)</span>`:`<code>${q.linux.show}</code>`;
+  const en = q.en?`<span class="en">${q.en}</span>`:"";
+  const head = mode==='ok'?"Juste.":mode==='reveal'?"Reponse :":"Attendu :";
+  el("reveal").innerHTML =
+    `<div><b>${head}</b></div>
+     <div class="name">${q.name}${en}</div>
+     <div>Windows : <code>${q.winShow}</code></div>
+     <div>Linux : ${lin}</div>` +
+    (q.tip?`<div class="tip">${q.tip}</div>`:"");
+  el("reveal").className="reveal show";
+}
+function next(){
+  if(idx>=pool.length) return;
+  idx++;
+  if(idx>=pool.length){ el("linuxField").style.display="none"; render(); return; }
+  render();
+}
+
+el("btnCheck").onclick=check;
+el("btnReveal").onclick=reveal;
+el("btnNext").onclick=next;
+el("btnReset").onclick=()=>loadPool(currentList());
+el("cat").onchange=()=>loadPool(currentList());
+el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice()); };
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"){ if(answered) next(); else check(); } });
+
+buildCatSelect();
+loadPool(DATA);
+</script>
+</body>
+</html>

@@ -44,7 +44,10 @@
   .qimg{margin:0 0 16px;text-align:center;display:none}
   .qimg img{max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:8px}
   .reveal .rimg{margin-top:12px;text-align:center}
-  .reveal .rimg img{max-width:100%;max-height:280px;border:1px solid var(--line);border-radius:8px}
+  .qimg img,.reveal .rimg img{cursor:zoom-in}
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px;cursor:zoom-out}
+  .lightbox.show{display:flex}
+  .lightbox img{max-width:95vw;max-height:95vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
@@ -94,6 +97,8 @@
   </div>
 </div>
 
+<div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt=""></div>
+
 <script>
 // ---- Banque, tiree du socle de Benjamin (fiches du 4 aout) ----
 // color: 'jaune' | 'rose' | 'vert'   name: titre FR en clair   en: acronyme anglais (optionnel)
@@ -114,8 +119,8 @@ const DATA = [
  {cat:"Reseau", color:"rose", name:"Config IP complete", en:"IP configuration",
   need:"Afficher toute ta config reseau en detail : IP, passerelle, DNS, MAC.",
   win:["ipconfig /all","ipconfig/all"], winShow:"ipconfig /all",
-  linux:{acc:["ip addr","ip a","ip address","ip addr; ip route","ip a && ip route"], show:"ip addr  +  ip route"},
-  tip:"Cote Linux c'est recompose : ip addr pour les interfaces, ip route pour la passerelle."},
+  linux:{acc:["ip addr","ip a","ip address","ip addr; ip route","ip addr ; ip route","ip a && ip route","ip a; ip route"], show:"ip addr  ;  ip route"},
+  tip:"Cote Linux c'est recompose : ip addr pour les interfaces, ip route pour la passerelle. ip addr seul suffit ici."},
 
  {cat:"Reseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
   need:"Vider le cache DNS local de la machine.",
@@ -126,8 +131,8 @@ const DATA = [
  {cat:"Reseau", color:"jaune", name:"Afficher le cache DNS", en:"display DNS",
   need:"Afficher le contenu du cache DNS local (ce que la machine a deja resolu).",
   win:["ipconfig /displaydns","ipconfig/displaydns"], winShow:"ipconfig /displaydns",
-  linux:{acc:["resolvectl statistics","sudo systemd-resolve --statistics"], show:"resolvectl statistics"},
-  tip:"Pour voir, pas pour vider. /flushdns pour vider."},
+  linux:{acc:["resolvectl status","resolvectl","systemd-resolve --status"], show:"resolvectl status"},
+  tip:"Pas d'equivalent strict cote Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache. /flushdns pour vider."},
 
  {cat:"Reseau", color:"jaune", name:"Tester la connectivite", en:"ping",
   need:"Tester si une machine distante repond (envoi ICMP echo request).",
@@ -145,13 +150,13 @@ const DATA = [
   need:"Afficher la table de routage de la machine (par ou sort le trafic).",
   win:["route print"], winShow:"route print",
   linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
-  tip:"On y lit notamment la passerelle par defaut (0.0.0.0)."},
+  tip:"Route par defaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur. Ne pas confondre destination et passerelle."},
 
  {cat:"Reseau", color:"vert", name:"Connexions reseau (cartes)", en:"Network Connections",
-  need:"Ouvrir les cartes reseau (activer / desactiver une interface).",
+  need:"Agir sur une interface : IP statique, DNS manuel, activer / desactiver.",
   win:["ncpa.cpl"], winShow:"ncpa.cpl", img:"connexions_reseaux",
   linux:{none:true},
-  tip:"Panneau Connexions reseau. Equivalent CLI Linux : ip link set."},
+  tip:"Console d'action, ne pas confondre avec ipconfig / ip addr qui ne font que lire. Equivalent CLI Linux : ip link set, ip addr add/del."},
 
  {cat:"Reseau", color:"vert", name:"Parametres reseau (profil Public/Prive)",
   need:"Basculer le profil reseau entre Public et Prive.",
@@ -169,23 +174,23 @@ const DATA = [
  {cat:"Systeme / materiel", color:"rose", name:"Inventaire systeme complet", en:"system info",
   need:"Sortir un resume systeme complet (OS, version, uptime, materiel de base).",
   win:["systeminfo"], winShow:"systeminfo",
-  linux:{acc:["uname -a","cat /etc/os-release","uptime"], show:"uname -a  +  /etc/os-release  +  uptime"},
-  tip:"Recompose cote Linux : une commande par info."},
+  linux:{acc:["uname -a","uname -a; cat /etc/os-release; uptime","uname -a ; cat /etc/os-release ; uptime"], show:"uname -a  ;  cat /etc/os-release  ;  uptime"},
+  tip:"Recompose cote Linux : une commande par info. uname -a seul suffit ici."},
 
  {cat:"Systeme / materiel", color:"rose", name:"Informations systeme (materiel)", en:"Microsoft System Information",
-  need:"Consulter un rapport materiel (CPU, RAM, disques) sans rien modifier.",
+  need:"Consulter l'inventaire fige de la machine (CPU, RAM, disques, composants), en lecture seule.",
   win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",
-  linux:{acc:["lscpu","free -h","lsblk"], show:"lscpu  +  lsblk  +  free -h"},
-  tip:"msinfo32 = consultation pure, on ne modifie rien."},
+  linux:{acc:["lscpu","lscpu; lsblk; free -h","lscpu ; lsblk ; free -h"], show:"lscpu  ;  lsblk  ;  free -h"},
+  tip:"Consultation pure, on ne modifie rien (a l'inverse de sysdm.cpl). lscpu seul suffit ici."},
 
  {cat:"Systeme / materiel", color:"vert", name:"Proprietes systeme", en:"System Properties",
-  need:"Renommer le PC, le joindre a un domaine (proprietes systeme, on agit).",
+  need:"Renommer le PC ou le joindre a un domaine.",
   win:["sysdm.cpl"], winShow:"sysdm.cpl", img:"proprietes_systeme",
   linux:{none:true},
   tip:"Console d'action, a l'inverse de msinfo32 (on consulte)."},
 
  {cat:"Systeme / materiel", color:"rose", name:"Gestionnaire de peripheriques", en:"Device Management",
-  need:"Ouvrir le gestionnaire de peripheriques (pilotes, materiel detecte).",
+  need:"Voir le materiel detecte et l'etat des pilotes (peripherique inconnu, pilote manquant).",
   win:["devmgmt.msc"], winShow:"devmgmt.msc", img:"gestionnaire_de_peripheriques",
   linux:{acc:["lshw -short","sudo lshw -short","lspci","lsusb"], show:"lshw -short"},
   tip:""},
@@ -216,7 +221,7 @@ const DATA = [
   tip:"Bien plus large que services.msc : ici on voit l'usage des ressources, pas que les services."},
 
  {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'evenements", en:"Event Viewer",
-  need:"Consulter les journaux d'evenements (logs systeme).",
+  need:"Voir pourquoi la machine a plante, ou tracer une erreur / une connexion (qui, quand).",
   win:["eventvwr.msc"], winShow:"eventvwr.msc", img:"observateur_d_evenements",
   linux:{acc:["journalctl","journalctl -p err -b"], show:"journalctl"},
   tip:"Onglet Securite = Event ID 4624 (connexion reussie) / 4625 (echec). Cle pour l'audit."},
@@ -235,10 +240,10 @@ const DATA = [
   tip:""},
 
  {cat:"Comptes / services", color:"jaune", name:"Comptes locaux",
-  need:"Lister ou creer des comptes utilisateurs locaux.",
+  need:"Lister les comptes utilisateurs locaux.",
   win:["net user"], winShow:"net user",
-  linux:{acc:["cat /etc/passwd","getent passwd"], show:"getent passwd  (ou cat /etc/passwd)"},
-  tip:""},
+  linux:{acc:["cat /etc/passwd","getent passwd"], show:"cat /etc/passwd  (ou getent passwd)"},
+  tip:"Consultation. Pour creer un compte, en vrai on ne tape pas net user /add : on passe par lusrmgr.msc (carte dediee)."},
 
  {cat:"Comptes / services", color:"vert", name:"Utilisateurs et groupes locaux", en:"Local Users Manager",
   need:"Ouvrir la console de gestion des comptes et groupes locaux.",
@@ -249,8 +254,8 @@ const DATA = [
  {cat:"Comptes / services", color:"rose", name:"Services (demons systeme)",
   need:"Gerer les services / demons du systeme (demarrer, arreter, etat), y compris ceux a l'arret.",
   win:["services.msc"], winShow:"services.msc", img:"services",
-  linux:{acc:["systemctl","systemctl list-units","systemctl status"], show:"systemctl (list-units / status)"},
-  tip:"Uniquement les demons systeme. Montre aussi les services stoppes, contrairement au gestionnaire des taches."},
+  linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
+  tip:"Uniquement les demons systeme. Montre aussi les services stoppes, contrairement au gestionnaire des taches. Pour voir aussi ceux a l'arret : --all ou systemctl list-unit-files --type=service."},
 
  // --- Maintenance / admin ---
  {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers systeme", en:"System File Checker",
@@ -430,8 +435,25 @@ el("btnNext").onclick=next;
 el("btnReset").onclick=()=>loadPool(currentList());
 el("cat").onchange=()=>loadPool(currentList());
 el("mode").onchange=()=>loadPool(currentList());
+
+// ---- Lightbox : clic sur une image pour l'agrandir (adaptee a l'ecran) ----
+function openLightbox(src){
+  el("lightboxImg").src=src;
+  el("lightbox").className="lightbox show";
+}
+function closeLightbox(){
+  el("lightbox").className="lightbox";
+  el("lightboxImg").src="";
+}
+document.addEventListener("click",e=>{
+  if(e.target.tagName==="IMG" && e.target.closest(".qimg, .rimg")){ openLightbox(e.target.src); }
+});
+el("lightbox").onclick=closeLightbox;
 el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice()); };
-document.addEventListener("keydown",e=>{ if(e.key==="Enter"){ if(answered) next(); else check(); } });
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && el("lightbox").classList.contains("show")){ closeLightbox(); return; }
+  if(e.key==="Enter"){ if(answered) next(); else check(); }
+});
 
 buildCatSelect();
 loadPool(DATA);

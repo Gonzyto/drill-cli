@@ -360,7 +360,7 @@ function render(){
   const qimg=el("qimg");
   if((mode==="full"||mode==="mask") && q.img){
     const src = mode==="mask"?imgMask(q):imgFull(q);
-    qimg.innerHTML=`<img src="${src}" alt="panneau" onerror="this.parentNode.style.display='none'">`;
+    qimg.innerHTML=`<img src="${src}" alt="panneau" onclick="openLightbox(this.src)" onerror="this.parentNode.style.display='none'">`;
     qimg.style.display="block";
   } else {
     qimg.innerHTML=""; qimg.style.display="none";
@@ -413,7 +413,7 @@ function showReveal(q, mode){
   const head = mode==='ok'?"Juste.":mode==='reveal'?"Reponse :":"Attendu :";
   // image complete (avec titre) a la correction, sauf si elle est deja affichee en question
   const rimg = (q.img && el("mode").value!=="full")
-    ? `<div class="rimg"><img src="${imgFull(q)}" alt="${q.name}" onerror="this.parentNode.style.display='none'"></div>` : "";
+    ? `<div class="rimg"><img src="${imgFull(q)}" alt="${q.name}" onclick="openLightbox(this.src)" onerror="this.parentNode.style.display='none'"></div>` : "";
   el("reveal").innerHTML =
     `<div><b>${head}</b></div>
      <div class="name">${q.name}${en}</div>
@@ -437,21 +437,18 @@ el("cat").onchange=()=>loadPool(currentList());
 el("mode").onchange=()=>loadPool(currentList());
 
 // ---- Lightbox : clic sur une image pour l'agrandir (adaptee a l'ecran) ----
-function openLightbox(src){
+window.openLightbox=function(src){
   el("lightboxImg").src=src;
   el("lightbox").className="lightbox show";
-}
-function closeLightbox(){
+};
+window.closeLightbox=function(){
   el("lightbox").className="lightbox";
   el("lightboxImg").src="";
-}
-document.addEventListener("click",e=>{
-  if(e.target.tagName==="IMG" && e.target.closest(".qimg, .rimg")){ openLightbox(e.target.src); }
-});
-el("lightbox").onclick=closeLightbox;
+};
+el("lightbox").onclick=window.closeLightbox;
 el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice()); };
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape" && el("lightbox").classList.contains("show")){ closeLightbox(); return; }
+  if(e.key==="Escape" && el("lightbox").classList.contains("show")){ window.closeLightbox(); return; }
   if(e.key==="Enter"){ if(answered) next(); else check(); }
 });
 

@@ -8,7 +8,7 @@
   :root{
     --bg:#0f1115; --card:#171a21; --line:#2a2f3a; --txt:#e6e9ef; --muted:#9aa3b2;
     --ok:#3fb950; --ko:#f85149; --accent:#58a6ff;
-    --jaune:#d9b400; --rose:#e06c9f; --vert:#3fb950;
+    --jaune:#ffe600; --rose:#ff2d95; --vert:#00e676;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
@@ -22,7 +22,10 @@
   .score{margin-left:auto;color:var(--muted);font-size:13px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
   .cat{display:inline-block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:6px;vertical-align:middle}
+  .dot{display:inline-block;width:11px;height:11px;margin-left:6px;vertical-align:middle}
+  .dot.jaune{border-radius:50%}
+  .dot.rose{border-radius:2px}
+  .dot.vert{width:0;height:0;background:transparent!important;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid var(--vert)}
   .need{font-size:17px;margin:0 0 18px}
   .field{margin-bottom:12px}
   label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
@@ -54,17 +57,17 @@
 <body>
 <div class="wrap">
   <h1>Drill CLI - Windows / Linux</h1>
-  <div class="sub">On part du besoin, tu retrouves l'outil. A la correction, le nom en clair (FR) et son acronyme (EN) s'affichent. Modes image : panneau avec titre (retrouver la commande) ou masque (retrouver nom + commande). Score de session (remis a zero si tu fermes l'onglet).</div>
+  <div class="sub">On part du besoin, tu retrouves l'outil. À la correction, le nom en clair (FR) et son acronyme (EN) s'affichent. Modes image : panneau avec titre (retrouver la commande) ou masqué (retrouver nom + commande). Score de session (remis à zéro si tu fermes l'onglet).</div>
 
   <div class="bar">
     <select id="mode">
       <option value="text">Besoin (texte)</option>
       <option value="full">Image + titre</option>
-      <option value="mask">Image masquee</option>
+      <option value="mask">Image masquée</option>
     </select>
     <select id="cat"></select>
-    <button id="btnReset">Melanger</button>
-    <button id="btnMissed">Refaire les ratees</button>
+    <button id="btnReset">Mélanger</button>
+    <button id="btnMissed">Refaire les ratées</button>
     <div class="score" id="score">0 / 0</div>
   </div>
 
@@ -83,8 +86,8 @@
     </div>
 
     <div class="actions">
-      <button class="primary" id="btnCheck">Verifier</button>
-      <button id="btnReveal">Reveler</button>
+      <button class="primary" id="btnCheck">Vérifier</button>
+      <button id="btnReveal">Révéler</button>
       <button id="btnNext">Suivant</button>
     </div>
 
@@ -92,9 +95,9 @@
   </div>
 
   <div class="legend">
-    <span><span class="dot" style="background:var(--jaune)"></span>jaune : paire quasi 1-pour-1</span>
-    <span><span class="dot" style="background:var(--rose)"></span>rose : equivalence recomposee</span>
-    <span><span class="dot" style="background:var(--vert)"></span>vert : pas d'equivalent CLI (panneau)</span>
+    <span><span class="dot jaune" style="background:var(--jaune)"></span>rond jaune : paire quasi 1-pour-1</span>
+    <span><span class="dot rose" style="background:var(--rose)"></span>carré rose : équivalence recomposée</span>
+    <span><span class="dot vert"></span>triangle vert : pas d'équivalent CLI (panneau)</span>
   </div>
 </div>
 
@@ -105,106 +108,106 @@
 // color: 'jaune' | 'rose' | 'vert'   name: titre FR en clair   en: acronyme anglais (optionnel)
 // linux: {none:true} si aucun equivalent CLI
 const DATA = [
- {cat:"Reseau", color:"jaune", name:"Connexions reseau (actives / en ecoute)", en:"network statistics",
-  need:"Voir toutes les connexions actives et en ecoute, avec le port, le PID et le process qui tient chaque connexion.",
+ {cat:"Réseau", color:"jaune", name:"Connexions réseau (actives / en écoute)", en:"network statistics",
+  need:"Voir toutes les connexions actives et en écoute, avec le port, le PID et le process qui tient chaque connexion.",
   win:["netstat -anob","netstat -anbo","netstat -aob","netstat -abno","netstat -ano"], winShow:"netstat -anob",
   linux:{acc:["ss -tunlp","ss -tulnp","ss -tnulp","ss -plunt"], show:"ss -tunlp"},
   tip:"Pilier investigation : qui parle avec qui. 0.0.0.0 en LISTENING = toutes interfaces."},
 
- {cat:"Reseau", color:"jaune", name:"Interroger le DNS (nom -> IP)", en:"name server lookup",
-  need:"Interroger le DNS pour obtenir l'IP derriere un nom (sans tester la machine).",
+ {cat:"Réseau", color:"jaune", name:"Interroger le DNS (nom -> IP)", en:"name server lookup",
+  need:"Interroger le DNS pour obtenir l'IP derrière un nom (sans tester la machine).",
   win:["nslookup","nslookup wikipedia.fr"], winShow:"nslookup <nom>",
   linux:{acc:["nslookup","dig","host"], show:"nslookup <nom> (ou dig / host)"},
-  tip:"Teste le resolveur de noms, pas la connectivite. A distinguer du ping."},
+  tip:"Teste le résolveur de noms, pas la connectivité. A distinguer du ping."},
 
- {cat:"Reseau", color:"rose", name:"Config IP complete", en:"IP configuration",
-  need:"Afficher toute ta config reseau en detail : IP, passerelle, DNS, MAC.",
+ {cat:"Réseau", color:"rose", name:"Config IP complète", en:"IP configuration",
+  need:"Afficher toute ta config réseau en détail : IP, passerelle, DNS, MAC.",
   win:["ipconfig /all","ipconfig/all"], winShow:"ipconfig /all",
-  linux:{acc:["ip addr","ip a","ip address","ip addr; ip route","ip addr ; ip route","ip a && ip route","ip a; ip route"], show:"ip addr  ;  ip route"},
-  tip:"Cote Linux c'est recompose : ip addr pour les interfaces, ip route pour la passerelle. ip addr seul suffit ici."},
+  linux:{acc:["ip addr","ip a","ip address","ip addr; ip route; resolvectl status","ip addr ; ip route ; resolvectl status","ip addr; ip route","ip addr ; ip route","ip a && ip route","ip a; ip route"], show:"ip addr  ;  ip route  ;  resolvectl status"},
+  tip:"Côté Linux c'est recomposé : ip addr (interfaces), ip route (passerelle), resolvectl status (DNS). ip addr seul suffit ici."},
 
- {cat:"Reseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
+ {cat:"Réseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
   need:"Vider le cache DNS local de la machine.",
   win:["ipconfig /flushdns","ipconfig/flushdns"], winShow:"ipconfig /flushdns",
   linux:{acc:["resolvectl flush-caches","sudo resolvectl flush-caches","systemd-resolve --flush-caches","sudo systemd-resolve --flush-caches"], show:"resolvectl flush-caches"},
-  tip:"Meme famille que /displaydns qui, lui, affiche le cache."},
+  tip:"Même famille que /displaydns qui, lui, affiche le cache."},
 
- {cat:"Reseau", color:"jaune", name:"Afficher le cache DNS", en:"display DNS",
-  need:"Afficher le contenu du cache DNS local (ce que la machine a deja resolu).",
+ {cat:"Réseau", color:"jaune", name:"Afficher le cache DNS", en:"display DNS",
+  need:"Afficher le contenu du cache DNS local (ce que la machine a déjà résolu).",
   win:["ipconfig /displaydns","ipconfig/displaydns"], winShow:"ipconfig /displaydns",
   linux:{acc:["resolvectl status","resolvectl","systemd-resolve --status"], show:"resolvectl status"},
-  tip:"Pas d'equivalent strict cote Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache. /flushdns pour vider."},
+  tip:"Pas d'équivalent strict côté Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache. /flushdns pour vider."},
 
- {cat:"Reseau", color:"jaune", name:"Tester la connectivite", en:"ping",
-  need:"Tester si une machine distante repond (envoi ICMP echo request).",
+ {cat:"Réseau", color:"jaune", name:"Tester la connectivité", en:"ping",
+  need:"Tester si une machine distante répond (envoi ICMP echo request).",
   win:["ping","ping 8.8.8.8"], winShow:"ping <hote>",
   linux:{acc:["ping","ping 8.8.8.8"], show:"ping <hote>"},
-  tip:"ICMP, couche 3, sans handshake ni etat de connexion (contrairement a TCP). La machine repond par un ICMP echo reply."},
+  tip:"ICMP, couche 3, sans handshake ni état de connexion (contrairement a TCP). La machine répond par un ICMP echo reply."},
 
- {cat:"Reseau", color:"jaune", name:"Itineraire / chemin emprunte", en:"trace route",
-  need:"Afficher le chemin (chaque routeur traverse) emprunte pour atteindre un hote.",
+ {cat:"Réseau", color:"jaune", name:"Itinéraire / chemin emprunté", en:"trace route",
+  need:"Afficher le chemin (chaque routeur traversé) emprunté pour atteindre un hôte.",
   win:["tracert","tracert 8.8.8.8"], winShow:"tracert <hote>",
   linux:{acc:["traceroute","tracepath"], show:"traceroute <hote>"},
   tip:"Chaque ligne = un saut (un routeur) sur le trajet."},
 
- {cat:"Reseau", color:"rose", name:"Table de routage",
+ {cat:"Réseau", color:"rose", name:"Table de routage",
   need:"Afficher la table de routage de la machine (par ou sort le trafic).",
   win:["route print"], winShow:"route print",
   linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
-  tip:"Route par defaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur. Ne pas confondre destination et passerelle."},
+  tip:"Route par défaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur. Ne pas confondre destination et passerelle."},
 
- {cat:"Reseau", color:"vert", name:"Connexions reseau (cartes)", en:"Network Connections",
-  need:"Agir sur une interface : IP statique, DNS manuel, activer / desactiver.",
+ {cat:"Réseau", color:"vert", name:"Connexions réseau (cartes)", en:"Network Connections",
+  need:"Agir sur une interface : IP statique, DNS manuel, activer / désactiver.",
   win:["ncpa.cpl"], winShow:"ncpa.cpl", img:"connexions_reseaux",
   linux:{none:true},
-  tip:"Console d'action, ne pas confondre avec ipconfig / ip addr qui ne font que lire. Equivalent CLI Linux : ip link set, ip addr add/del."},
+  tip:"Console d'action, ne pas confondre avec ipconfig / ip addr qui ne font que lire. Équivalent CLI Linux : ip link set, ip addr add/del."},
 
- {cat:"Reseau", color:"vert", name:"Parametres reseau (profil Public/Prive)",
-  need:"Basculer le profil reseau entre Public et Prive.",
+ {cat:"Réseau", color:"vert", name:"Paramètres réseau (profil Public/Privé)",
+  need:"Basculer le profil réseau entre Public et Privé.",
   win:["ms-settings:network"], winShow:"ms-settings:network", img:"reseau_et_internet",
   linux:{none:true},
-  tip:"Parametres > Reseau. Impacte les regles du pare-feu selon le profil."},
+  tip:"Paramètres > Réseau. Impacte les règles du pare-feu selon le profil."},
 
  // --- Systeme / materiel ---
- {cat:"Systeme / materiel", color:"jaune", name:"Gestion des disques", en:"Disk Management",
-  need:"Gerer les disques et partitions (creer, formater, assigner une lettre).",
+ {cat:"Système / matériel", color:"jaune", name:"Gestion des disques", en:"Disk Management",
+  need:"Gérer les disques et partitions (créer, formater, assigner une lettre).",
   win:["diskmgmt.msc"], winShow:"diskmgmt.msc", img:"gestion_des_disques",
   linux:{acc:["lsblk"], show:"lsblk (+ fdisk / parted pour agir)"},
   tip:"lsblk liste les blocs ; l'action se fait avec fdisk/parted."},
 
- {cat:"Systeme / materiel", color:"rose", name:"Inventaire systeme complet", en:"system info",
-  need:"Sortir un resume systeme complet (OS, version, uptime, materiel de base).",
+ {cat:"Système / matériel", color:"rose", name:"Infos machine (ligne de commande)", en:"system info",
+  need:"Consulter les infos de la machine en ligne de commande (OS, version, uptime, matériel de base).",
   win:["systeminfo"], winShow:"systeminfo",
-  linux:{acc:["uname -a","uname -a; cat /etc/os-release; uptime","uname -a ; cat /etc/os-release ; uptime"], show:"uname -a  ;  cat /etc/os-release  ;  uptime"},
-  tip:"Recompose cote Linux : une commande par info. uname -a seul suffit ici."},
+  linux:{acc:["uname -a","lsb_release -a","uname -a; cat /etc/os-release; uptime","uname -a ; cat /etc/os-release ; uptime","uname -a; lsb_release -a; uptime"], show:"uname -a  ;  cat /etc/os-release  ;  uptime"},
+  tip:"Recomposé côté Linux : une commande par info. uname -a (ou lsb_release -a) seul suffit ici."},
 
- {cat:"Systeme / materiel", color:"rose", name:"Informations systeme (materiel)", en:"Microsoft System Information",
-  need:"Consulter l'inventaire fige de la machine (CPU, RAM, disques, composants), en lecture seule.",
+ {cat:"Système / matériel", color:"rose", name:"Informations système (panneau)", en:"Microsoft System Information",
+  need:"Afficher le panneau graphique qui sort les infos complètes de la machine (matériel, composants).",
   win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",
   linux:{acc:["lscpu","lscpu; lsblk; free -h","lscpu ; lsblk ; free -h"], show:"lscpu  ;  lsblk  ;  free -h"},
-  tip:"Consultation pure, on ne modifie rien (a l'inverse de sysdm.cpl). lscpu seul suffit ici."},
+  tip:"Panneau de consultation, on ne modifie rien (à l'inverse de sysdm.cpl). lscpu seul suffit côté Linux."},
 
- {cat:"Systeme / materiel", color:"vert", name:"Proprietes systeme", en:"System Properties",
+ {cat:"Système / matériel", color:"vert", name:"Propriétés système", en:"System Properties",
   need:"Renommer le PC ou le joindre a un domaine.",
   win:["sysdm.cpl"], winShow:"sysdm.cpl", img:"proprietes_systeme",
   linux:{none:true},
   tip:"Console d'action, a l'inverse de msinfo32 (on consulte)."},
 
- {cat:"Systeme / materiel", color:"rose", name:"Gestionnaire de peripheriques", en:"Device Management",
-  need:"Voir le materiel detecte et l'etat des pilotes (peripherique inconnu, pilote manquant).",
+ {cat:"Système / matériel", color:"rose", name:"Gestionnaire de périphériques", en:"Device Management",
+  need:"Voir le matériel détecté et l'état des pilotes (périphérique inconnu, pilote manquant).",
   win:["devmgmt.msc"], winShow:"devmgmt.msc", img:"gestionnaire_de_peripheriques",
   linux:{acc:["lshw -short","sudo lshw -short","lspci","lsusb"], show:"lshw -short"},
   tip:""},
 
- {cat:"Systeme / materiel", color:"rose", name:"A propos de Windows (version)", en:"Windows Version",
-  need:"Afficher la version exacte de Windows installee.",
+ {cat:"Système / matériel", color:"rose", name:"A propos de Windows (version)", en:"Windows Version",
+  need:"Afficher la version exacte de Windows installée.",
   win:["winver"], winShow:"winver", img:"a_propos_de_windows",
   linux:{acc:["cat /etc/os-release","lsb_release -a"], show:"lsb_release -a  (ou /etc/os-release)"},
-  tip:"Petite fenetre 'A propos', juste la version."},
+  tip:"Petite fenêtre 'A propos', juste la version."},
 
  // --- Diagnostic / process ---
  {cat:"Diagnostic / process", color:"jaune", name:"Liste des processus", en:"task list",
-  need:"Lister les processus en cours d'execution.",
+  need:"Lister les processus en cours d'exécution.",
   win:["tasklist"], winShow:"tasklist",
   linux:{acc:["ps aux","ps -aux","ps -ef"], show:"ps aux"},
   tip:""},
@@ -215,20 +218,20 @@ const DATA = [
   linux:{acc:["kill","kill 1234","kill -9 1234"], show:"kill <PID>"},
   tip:""},
 
- {cat:"Diagnostic / process", color:"jaune", name:"Gestionnaire des taches", en:"Task Manager",
-  need:"Ouvrir un moniteur temps reel des process ET des ressources (CPU, RAM, disque, reseau).",
+ {cat:"Diagnostic / process", color:"jaune", name:"Gestionnaire des tâches", en:"Task Manager",
+  need:"Ouvrir un moniteur temps réel des process ET des ressources (CPU, RAM, disque, réseau).",
   win:["taskmgr"], winShow:"taskmgr", img:"gestionnaire_des_taches",
   linux:{acc:["htop","top"], show:"htop"},
   tip:"Bien plus large que services.msc : ici on voit l'usage des ressources, pas que les services."},
 
- {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'evenements", en:"Event Viewer",
-  need:"Voir pourquoi la machine a plante, ou tracer une erreur / une connexion (qui, quand).",
+ {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'événements", en:"Event Viewer",
+  need:"Voir pourquoi la machine a planté, ou tracer une erreur / une connexion (qui, quand).",
   win:["eventvwr.msc"], winShow:"eventvwr.msc", img:"observateur_d_evenements",
-  linux:{acc:["journalctl","journalctl -p err -b"], show:"journalctl"},
-  tip:"Onglet Securite = Event ID 4624 (connexion reussie) / 4625 (echec). Cle pour l'audit."},
+  linux:{acc:["journalctl","journalctl -p err -b","journalctl -b","journalctl -xe"], show:"journalctl -p err -b"},
+  tip:"Onglet Sécurité = Event ID 4624 (connexion réussie) / 4625 (échec). Clé pour l'audit."},
 
  {cat:"Diagnostic / process", color:"jaune", name:"Filtrer une sortie (grep de Windows)", en:"find string",
-  need:"Filtrer une sortie de commande sur un motif (l'equivalent de grep sous Windows).",
+  need:"Filtrer une sortie de commande sur un motif (l'équivalent de grep sous Windows).",
   win:["findstr","findstr /i"], winShow:"findstr /I <motif>",
   linux:{acc:["grep","grep -i"], show:"grep <motif>"},
   tip:""},
@@ -244,35 +247,35 @@ const DATA = [
   need:"Lister les comptes utilisateurs locaux.",
   win:["net user"], winShow:"net user",
   linux:{acc:["cat /etc/passwd","getent passwd"], show:"cat /etc/passwd  (ou getent passwd)"},
-  tip:"Consultation. Pour creer un compte, en vrai on ne tape pas net user /add : on passe par lusrmgr.msc (carte dediee)."},
+  tip:"Consultation. Pour créer un compte, en vrai on ne tape pas net user /add : on passe par lusrmgr.msc (carte dédiée)."},
 
  {cat:"Comptes / services", color:"vert", name:"Utilisateurs et groupes locaux", en:"Local Users Manager",
   need:"Ouvrir la console de gestion des comptes et groupes locaux.",
   win:["lusrmgr.msc"], winShow:"lusrmgr.msc", img:"utilisateurs_et_groupes_locaux",
   linux:{none:true},
-  tip:"Cote Linux, tout passe par la CLI : useradd, usermod, passwd."},
+  tip:"Côté Linux, tout passe par la CLI : useradd, usermod, passwd."},
 
- {cat:"Comptes / services", color:"rose", name:"Services (demons systeme)",
-  need:"Gerer les services / demons du systeme (demarrer, arreter, etat), y compris ceux a l'arret.",
+ {cat:"Comptes / services", color:"rose", name:"Services (demons système)",
+  need:"Gérer les services / demons du système (demarrer, arreter, état), y compris ceux a l'arret.",
   win:["services.msc"], winShow:"services.msc", img:"services",
   linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
-  tip:"Uniquement les demons systeme. Montre aussi les services stoppes, contrairement au gestionnaire des taches. Pour voir aussi ceux a l'arret : --all ou systemctl list-unit-files --type=service."},
+  tip:"Uniquement les demons système. Montre aussi les services stoppes, contrairement au gestionnaire des tâches. Pour voir aussi ceux a l'arret : --all ou systemctl list-unit-files --type=service."},
 
  // --- Maintenance / admin ---
- {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers systeme", en:"System File Checker",
-  need:"Verifier et reparer les fichiers systeme corrompus de Windows.",
+ {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers système", en:"System File Checker",
+  need:"Vérifier et réparer les fichiers système corrompus de Windows.",
   win:["sfc /scannow","sfc/scannow"], winShow:"sfc /scannow",
   linux:{acc:["apt install --reinstall","sudo apt install --reinstall"], show:"apt install --reinstall <paquet>"},
-  tip:"Nuance : cote Linux il faut connaitre le paquet fautif, pas de scan auto."},
+  tip:"Nuance : côté Linux il faut connaître le paquet fautif, pas de scan auto."},
 
- {cat:"Maintenance / admin", color:"vert", name:"Mettre a jour les strategies de groupe", en:"Group Policy Update",
-  need:"Forcer l'application immediate des strategies de groupe (GPO).",
+ {cat:"Maintenance / admin", color:"vert", name:"Mettre a jour les stratégies de groupe", en:"Group Policy Update",
+  need:"Forcer l'application immédiate des stratégies de groupe (GPO).",
   win:["gpupdate /force","gpupdate/force"], winShow:"gpupdate /force",
   linux:{none:true},
   tip:"Specifique a l'univers Active Directory."},
 
  {cat:"Maintenance / admin", color:"rose", name:"Verifier la sante du disque", en:"check disk",
-  need:"Verifier et reparer un disque (secteurs, systeme de fichiers).",
+  need:"Vérifier et réparer un disque (secteurs, système de fichiers).",
   win:["chkdsk"], winShow:"chkdsk",
   linux:{acc:["fsck"], show:"fsck"},
   tip:"Nuance : fsck exige un demontage manuel, chkdsk le gere."},
@@ -287,25 +290,25 @@ const DATA = [
   need:"Ouvrir les options d'alimentation (mode d'alimentation, mise en veille, comportement du bouton marche).",
   win:["powercfg.cpl"], winShow:"powercfg.cpl", img:"options_d_alimentation",
   linux:{none:true},
-  tip:"Panneau pur. Le vrai interet : savoir que 'Options d'alimentation' = powercfg.cpl. Cote Linux : powertop / tlp."},
+  tip:"Panneau pur. Le vrai intérêt : savoir que 'Options d'alimentation' = powercfg.cpl. Côté Linux : powertop / tlp."},
 
- {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (regles avancees)", en:"Windows Firewall",
-  need:"Ouvrir le pare-feu avec regles de trafic entrant / sortant.",
+ {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (règles avancées)", en:"Windows Firewall",
+  need:"Ouvrir le pare-feu avec règles de trafic entrant / sortant.",
   win:["wf.msc"], winShow:"wf.msc", img:"pare_feu_windows_defender",
   linux:{none:true},
-  tip:"Regles fines. Equivalents Linux : ufw / iptables / nftables."},
+  tip:"Regles fines. Équivalents Linux : ufw / iptables / nftables."},
 
- {cat:"Maintenance / admin", color:"vert", name:"Programmes et fonctionnalites (desinstaller)", en:"Application Wizard",
-  need:"Ouvrir l'ajout / suppression de programmes pour desinstaller ou modifier un logiciel.",
+ {cat:"Maintenance / admin", color:"vert", name:"Programmes et fonctionnalités (désinstaller)", en:"Application Wizard",
+  need:"Ouvrir l'ajout / suppression de programmes pour désinstaller ou modifier un logiciel.",
   win:["appwiz.cpl"], winShow:"appwiz.cpl", img:"programmes_et_fonctionnalites",
   linux:{none:true},
-  tip:"Panneau pur. Cote Linux : apt remove."},
+  tip:"Panneau pur. Côté Linux : apt remove."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Connexion Bureau a distance", en:"Microsoft Terminal Services Client",
   need:"Lancer une connexion Bureau a distance vers une autre machine.",
   win:["mstsc"], winShow:"mstsc", img:"connexion_bureau_a_distance",
   linux:{none:true},
-  tip:"RDP, port 3389 (a bien retenir). Cote Linux : xfreerdp / rdesktop."}
+  tip:"RDP, port 3389 (à bien retenir). Côté Linux : xfreerdp / rdesktop."}
 ];
 
 // ---- Logique ----
@@ -356,7 +359,8 @@ function render(){
   el("win").style.display="block";
   const q=pool[idx];
   el("qcat").firstChild.textContent=q.cat+" ";
-  el("qdot").style.background=dotColor(q.color);
+  el("qdot").className="dot "+q.color;
+  el("qdot").style.background = q.color==="vert" ? "" : dotColor(q.color);
   const mode=el("mode").value;
   const qimg=el("qimg");
   if((mode==="full"||mode==="mask") && q.img){

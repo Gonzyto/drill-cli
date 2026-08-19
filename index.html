@@ -138,6 +138,12 @@ const DATA = [
   linux:{acc:["resolvectl status","resolvectl","systemd-resolve --status"], show:"resolvectl status"},
   tip:"Pas d'équivalent strict côté Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache. /flushdns pour vider."},
 
+ {cat:"Réseau", color:"jaune", name:"Renouveler le bail DHCP", en:"release / renew",
+  need:"Larguer l'adresse IP obtenue en DHCP, puis en redemander une neuve au serveur.",
+  win:["ipconfig /release puis ipconfig /renew","ipconfig /release; ipconfig /renew","ipconfig /release ; ipconfig /renew","ipconfig /release && ipconfig /renew","ipconfig /release","ipconfig/release","ipconfig /renew","ipconfig/renew"], winShow:"ipconfig /release   puis   ipconfig /renew",
+  linux:{acc:["sudo dhclient -r; sudo dhclient","sudo dhclient -r ; sudo dhclient","dhclient -r; dhclient","dhclient -r ; dhclient","sudo dhclient -r && sudo dhclient","dhclient -r","sudo dhclient -r","dhclient","sudo dhclient"], show:"sudo dhclient -r   puis   sudo dhclient"},
+  tip:"Deux temps : /release largue le bail, /renew en redemande un. Réflexe quand la machine se retrouve en 169.254.x.x (APIPA = elle n'a joint aucun serveur DHCP). Côté Linux moderne géré par NetworkManager, on ferait plutôt nmcli con down puis up."},
+
  {cat:"Réseau", color:"jaune", name:"Tester la connectivité", en:"ping",
   need:"Tester si une machine distante répond (envoi ICMP echo request).",
   win:["ping","ping 8.8.8.8"], winShow:"ping <hote>",
@@ -155,6 +161,12 @@ const DATA = [
   win:["route print"], winShow:"route print",
   linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
   tip:"Route par défaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur. Ne pas confondre destination et passerelle."},
+
+ {cat:"Réseau", color:"jaune", name:"Lecteur réseau (monter / lister)", en:"net use",
+  need:"Lister les lecteurs réseau montés, ou en monter un sur un partage distant.",
+  win:["net use","net use z: \\\\serveur\\partage","net use z:"], winShow:"net use   (ou  net use Z: \\\\serveur\\partage)",
+  linux:{acc:["mount -t cifs","sudo mount -t cifs","mount","sudo mount"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
+  tip:"net use seul liste les lecteurs mappés. Erreur 67 (nom réseau introuvable) = le partage n'existe pas ou le chemin est faux. Côté Linux, un partage Windows se monte en CIFS/SMB."},
 
  {cat:"Réseau", color:"vert", name:"Connexions réseau (cartes)", en:"Network Connections",
   need:"Agir sur une interface : IP statique, DNS manuel, activer / désactiver.",
@@ -261,6 +273,12 @@ const DATA = [
   linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
   tip:"Uniquement les demons système. Montre aussi les services stoppes, contrairement au gestionnaire des tâches. Pour voir aussi ceux a l'arret : --all ou systemctl list-unit-files --type=service."},
 
+ {cat:"Comptes / services", color:"jaune", name:"État d'un service (ligne de commande)", en:"service control query",
+  need:"Vérifier vite fait si un service tourne ou est arrêté, sans ouvrir la console graphique.",
+  win:["sc query","sc query <service>","sc query spooler","sc query wuauserv"], winShow:"sc query <service>",
+  linux:{acc:["systemctl status","systemctl status <service>","systemctl is-active","systemctl is-active <service>"], show:"systemctl status <service>"},
+  tip:"État renvoyé : RUNNING ou STOPPED. C'est le pendant CLI de services.msc pour un diagnostic rapide. sc qc <service> donnerait en plus le type de démarrage (AUTO / MANUAL / DISABLED)."},
+
  // --- Maintenance / admin ---
  {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers système", en:"System File Checker",
   need:"Vérifier et réparer les fichiers système corrompus de Windows.",
@@ -273,6 +291,12 @@ const DATA = [
   win:["gpupdate /force","gpupdate/force"], winShow:"gpupdate /force",
   linux:{none:true},
   tip:"Specifique a l'univers Active Directory."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Stratégies réellement appliquées", en:"Group Policy Result",
+  need:"Vérifier quelles stratégies de groupe se sont réellement appliquées au poste et à l'utilisateur.",
+  win:["gpresult /r","gpresult/r","gpresult /r /scope computer","gpresult /scope:user /r"], winShow:"gpresult /r",
+  linux:{none:true},
+  tip:"Le diagnostic AD par excellence : lecteur réseau, imprimante ou politique qui ne s'applique pas. gpupdate FORCE l'application, gpresult MONTRE ce qui a été appliqué. Les deux font la paire. Notion Active Directory, pas d'équivalent Linux direct."},
 
  {cat:"Maintenance / admin", color:"rose", name:"Verifier la sante du disque", en:"check disk",
   need:"Vérifier et réparer un disque (secteurs, système de fichiers).",

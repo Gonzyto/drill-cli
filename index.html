@@ -332,7 +332,61 @@ const DATA = [
   need:"Lancer une connexion Bureau a distance vers une autre machine.",
   win:["mstsc"], winShow:"mstsc", img:"connexion_bureau_a_distance",
   linux:{none:true},
-  tip:"RDP, port 3389 (à bien retenir). Côté Linux : xfreerdp / rdesktop."}
+  tip:"RDP, port 3389 (à bien retenir). Côté Linux : xfreerdp / rdesktop."},
+
+ {cat:"Réseau", color:"jaune", name:"Tester un service sur un port (telnet)", en:"telnet",
+  need:"Vérifier qu'un service TCP répond sur un port précis (POP3 = 110, SMTP = 25, HTTP = 80).",
+  win:["telnet <ip> <port>","telnet ip port","telnet 192.168.20.250 110","telnet"], winShow:"telnet <ip> <port>",
+  linux:{acc:["telnet <ip> <port>","nc -zv <ip> <port>","nc <ip> <port>","telnet"], show:"telnet <ip> <port>   ou   nc -zv <ip> <port>"},
+  tip:"Séparateur ESPACE sous Windows, jamais deux-points : telnet 192.168.20.250 110, pas ...250:110. Client telnet désactivé par défaut sous Windows, équivalent PowerShell moderne : Test-NetConnection -Port 110. Sous Linux on utilise souvent nc (netcat)."},
+
+ {cat:"Réseau", color:"vert", name:"Connecter un lecteur réseau", en:"Map network drive",
+  need:"Monter un partage réseau en lui attribuant une lettre de lecteur (Z:, P:...) depuis Ce PC.",
+  win:["net use","net use z: \\\\serveur\\partage","net use z:"], winShow:"net use", img:"connecter_lecteur_reseau",
+  linux:{acc:["mount -t cifs","sudo mount -t cifs","mount","sudo mount"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
+  tip:"Le menu du quotidien en entreprise : il mappe une lettre (Z:, P:) vers un partage, souvent posé automatiquement par une GPO ou un script de login qui utilise net use en coulisse. À distinguer de « Ajouter un emplacement réseau » qui crée un raccourci SANS lettre. Chemin : Ce PC > bouton ... (ou clic droit) > Connecter un lecteur réseau."},
+
+ {cat:"Système / matériel", color:"vert", name:"Paramètres de stockage", en:"Storage settings",
+  need:"Voir la répartition de l'espace disque par catégories (applications, fichiers temporaires...) et gérer l'Assistant Stockage.",
+  win:["ms-settings:storagesense"], winShow:"ms-settings:storagesense", img:"parametres_de_stockage",
+  linux:{none:true},
+  tip:"Paramètres > Système > Stockage. Vue par catégories de ce qui mange l'espace, à ne pas confondre avec Gestion des disques (diskmgmt.msc) qui gère partitions et volumes. Équivalent Linux en CLI : du -h ou ncdu."},
+
+ {cat:"Diagnostic / process", color:"vert", name:"Moniteur de fiabilité", en:"Reliability Monitor",
+  need:"Voir l'historique chronologique des pannes et l'indice de stabilité du poste sur les dernières semaines.",
+  win:["perfmon /rel","perfmon/rel"], winShow:"perfmon /rel", img:"moniteur_de_fiabilite",
+  linux:{none:true},
+  tip:"Frise chronologique, indice de stabilité de 1 à 10, échecs applications / Windows / divers. À distinguer du Moniteur de performance (perfmon seul) qui montre les compteurs en temps réel (CPU, RAM, disque). Ici l'historique des plantages, là les mesures live."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Assistance à distance Windows", en:"Windows Remote Assistance",
+  need:"Prendre la main sur la session EN COURS d'un utilisateur pour l'aider, l'utilisateur voit l'écran et interagit.",
+  win:["msra","msra.exe"], winShow:"msra", img:"assistance_a_distance_windows",
+  linux:{none:true},
+  tip:"À distinguer du Bureau à distance (mstsc) : le RDP ouvre une NOUVELLE session et verrouille l'écran local, l'Assistance à distance PARTAGE la session courante. Successeur moderne sous Windows : Assistance rapide (Quick Assist)."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Restauration du système", en:"System Restore",
+  need:"Ramener le système à un point de restauration antérieur pour annuler un changement récent qui a cassé la machine.",
+  win:["rstrui","rstrui.exe"], winShow:"rstrui", img:"restauration_du_systeme",
+  linux:{none:true},
+  tip:"Restaure fichiers système, programmes et pilotes à une date antérieure, SANS toucher aux documents personnels. À distinguer de l'onglet Protection du système (sysdm.cpl) qui ACTIVE et configure les points. rstrui = l'acte, Protection = l'interrupteur."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Versions précédentes", en:"Previous Versions",
+  need:"Restaurer un fichier ou un dossier à un état antérieur depuis ses propriétés.",
+  win:["versions précédentes","onglet versions précédentes"], winShow:"Clic droit > Propriétés > onglet Versions précédentes", img:"versions_precedentes",
+  linux:{none:true},
+  tip:"Onglet dans les propriétés d'un fichier ou dossier. Alimenté par l'Historique des fichiers et les points de restauration : sans eux, l'onglet est vide (clichés instantanés / shadow copies). Pas de commande de lancement directe."},
+
+ {cat:"Maintenance / admin", color:"vert", name:"Paramètres (Windows)", en:"Settings",
+  need:"Ouvrir le hub de configuration moderne de Windows (réseau, comptes, applications, système, tout au même endroit).",
+  win:["ms-settings:","start ms-settings:"], winShow:"ms-settings:", img:"parametres",
+  linux:{none:true},
+  tip:"Le hub moderne (Windows 10/11) qui remplace peu à peu le Panneau de configuration. Se lance par ms-settings: (avec les deux-points). Chaque sous-page a son URI, ex ms-settings:network, ms-settings:storagesense."},
+
+ {cat:"Système / matériel", color:"jaune", name:"Gérer les pilotes (magasin Windows)", en:"PnP Utility",
+  need:"Ajouter, lister ou supprimer un pilote tiers dans le magasin de pilotes Windows.",
+  win:["pnputil","pnputil /add-driver","pnputil /enum-drivers","pnputil /delete-driver"], winShow:"pnputil",
+  linux:{none:true},
+  tip:"pnputil /add-driver pour installer un .inf, /enum-drivers pour lister, /delete-driver pour retirer. C'est LA commande d'ajout d'un pilote tiers au magasin, à ne pas confondre avec driverquery qui ne fait que lister. Côté Linux, logique différente : les modules noyau se gèrent avec modprobe / lsmod / rmmod."}
 ];
 
 // ---- Logique ----

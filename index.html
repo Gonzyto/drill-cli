@@ -19,6 +19,8 @@
   select,button{font:inherit;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
   button:hover{border-color:var(--accent)}
   button.primary{background:var(--accent);color:#0b0d11;border-color:var(--accent);font-weight:600}
+  .lintoggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+  .lintoggle input{cursor:pointer;width:15px;height:15px}
   .score{margin-left:auto;color:var(--muted);font-size:13px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
   .cat{display:inline-block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -68,6 +70,7 @@
     <select id="cat"></select>
     <button id="btnReset">Mélanger</button>
     <button id="btnMissed">Refaire les ratées</button>
+    <label class="lintoggle"><input type="checkbox" id="linToggle">Équivalent Linux</label>
     <div class="score" id="score">0 / 0</div>
   </div>
 
@@ -162,11 +165,17 @@ const DATA = [
   linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
   tip:"Route par défaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur. Ne pas confondre destination et passerelle."},
 
- {cat:"Réseau", color:"jaune", name:"Lecteur réseau (monter / lister)", en:"net use",
-  need:"Lister les lecteurs réseau montés, ou en monter un sur un partage distant.",
-  win:["net use","net use z: \\\\serveur\\partage","net use z:"], winShow:"net use   (ou  net use Z: \\\\serveur\\partage)",
-  linux:{acc:["mount -t cifs","sudo mount -t cifs","mount","sudo mount"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
-  tip:"net use seul liste les lecteurs mappés. Erreur 67 (nom réseau introuvable) = le partage n'existe pas ou le chemin est faux. Côté Linux, un partage Windows se monte en CIFS/SMB."},
+ {cat:"Réseau", color:"jaune", name:"Lister les lecteurs réseau", en:"net use",
+  need:"Lister les lecteurs réseau actuellement montés sur la machine.",
+  win:["net use"], winShow:"net use",
+  linux:{acc:["mount | grep cifs","mount grep cifs","mount | grep -i cifs"], show:"mount | grep cifs"},
+  tip:"net use seul (sans argument) liste les lecteurs mappés. Erreur 67 (nom réseau introuvable) = le partage n'existe pas ou le chemin est faux. Côté Linux, on filtre la sortie de mount sur cifs (le protocole de partage Windows/SMB) pour ne voir que les montages réseau."},
+
+ {cat:"Réseau", color:"jaune", name:"Monter un partage distant", en:"map / mount share",
+  need:"Monter un partage distant sur une lettre de lecteur (commande complète, avec chemin).",
+  win:["net use z: \\\\serveur\\partage","net use \\\\serveur\\partage","net use z:","net use p: \\\\serveur\\partage"], winShow:"net use Z: \\\\serveur\\partage",
+  linux:{acc:["sudo mount -t cifs //serveur/partage /mnt/point","mount -t cifs //serveur/partage /mnt/point","sudo mount -t cifs","mount -t cifs"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
+  tip:"La vraie paire commande-à-commande. Windows : net use + lettre + chemin UNC (double antislash). Linux : -t cifs indique le type de système de fichiers (cifs = le protocole de partage Windows, aussi appelé SMB), //serveur/partage est la source (slashs simples), /mnt/point le dossier local qui doit déjà exister. Option fréquente : -o username=ton_user pour les identifiants."},
 
  {cat:"Réseau", color:"vert", name:"Connexions réseau (cartes)", en:"Network Connections",
   need:"Agir sur une interface : IP statique, DNS manuel, activer / désactiver.",
@@ -190,14 +199,14 @@ const DATA = [
  {cat:"Système / matériel", color:"rose", name:"Infos machine (ligne de commande)", en:"system info",
   need:"Consulter les infos de la machine en ligne de commande (OS, version, uptime, matériel de base).",
   win:["systeminfo"], winShow:"systeminfo",
-  linux:{acc:["uname -a","lsb_release -a","uname -a; cat /etc/os-release; uptime","uname -a ; cat /etc/os-release ; uptime","uname -a; lsb_release -a; uptime"], show:"uname -a  ;  cat /etc/os-release  ;  uptime"},
-  tip:"Recomposé côté Linux : une commande par info. uname -a (ou lsb_release -a) seul suffit ici."},
+  linux:{acc:["uname -a","lsb_release -a","uname -a cat /etc/os-release uptime lshw -short","uname -a cat /etc/os-release uptime","uname -a lshw -short"], show:"uname -a  ;  cat /etc/os-release  ;  uptime  ;  lshw -short"},
+  tip:"Recomposé côté Linux : une commande par info. uname -a donne l'OS et le noyau, cat /etc/os-release la distrib, uptime la durée de fonctionnement, et lshw -short le matériel de base (que les autres ne montrent pas). uname -a seul suffit pour valider ici."},
 
  {cat:"Système / matériel", color:"rose", name:"Informations système (panneau)", en:"Microsoft System Information",
   need:"Afficher le panneau graphique qui sort les infos complètes de la machine (matériel, composants).",
   win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",
-  linux:{acc:["lscpu","lscpu; lsblk; free -h","lscpu ; lsblk ; free -h"], show:"lscpu  ;  lsblk  ;  free -h"},
-  tip:"Panneau de consultation, on ne modifie rien (à l'inverse de sysdm.cpl). lscpu seul suffit côté Linux."},
+  linux:{acc:["lscpu","lscpu lsblk free -h lshw -short","lscpu lsblk free -h","lshw -short"], show:"lscpu  ;  lsblk  ;  free -h  ;  lshw -short"},
+  tip:"Panneau de consultation, on ne modifie rien (à l'inverse de sysdm.cpl). Côté Linux, lscpu (CPU), lsblk (disques), free -h (RAM) et lshw -short (vue matériel complète) se complètent. lscpu seul suffit pour valider."},
 
  {cat:"Système / matériel", color:"vert", name:"Propriétés système", en:"System Properties",
   need:"Renommer le PC ou le joindre a un domaine.",
@@ -341,10 +350,10 @@ const DATA = [
   tip:"Séparateur ESPACE sous Windows, jamais deux-points : telnet 192.168.20.250 110, pas ...250:110. Client telnet désactivé par défaut sous Windows, équivalent PowerShell moderne : Test-NetConnection -Port 110. Sous Linux on utilise souvent nc (netcat)."},
 
  {cat:"Réseau", color:"vert", name:"Connecter un lecteur réseau", en:"Map network drive",
-  need:"Monter un partage réseau en lui attribuant une lettre de lecteur (Z:, P:...) depuis Ce PC.",
-  win:["net use","net use z: \\\\serveur\\partage","net use z:"], winShow:"net use", img:"connecter_lecteur_reseau",
-  linux:{acc:["mount -t cifs","sudo mount -t cifs","mount","sudo mount"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
-  tip:"Le menu du quotidien en entreprise : il mappe une lettre (Z:, P:) vers un partage, souvent posé automatiquement par une GPO ou un script de login qui utilise net use en coulisse. À distinguer de « Ajouter un emplacement réseau » qui crée un raccourci SANS lettre. Chemin : Ce PC > bouton ... (ou clic droit) > Connecter un lecteur réseau."},
+  need:"Depuis Ce PC, mapper un partage réseau à une lettre de lecteur (Z:, P:...) via le menu graphique. Quel est ce menu ?",
+  win:["connecter un lecteur reseau","connecter lecteur reseau"], winShow:"Clic droit sur Ce PC > Connecter un lecteur réseau", img:"connecter_lecteur_reseau",
+  linux:{none:true},
+  tip:"Le geste graphique du quotidien en entreprise : il mappe une lettre (Z:, P:) vers un partage. Souvent posé automatiquement par une GPO ou un script de login qui utilise net use en coulisse. C'est un menu, pas une commande : pour la vraie commande, voir les cartes « Lister les lecteurs réseau » (net use) et « Monter un partage distant » (net use Z: \\\\serveur\\partage)."},
 
  {cat:"Système / matériel", color:"vert", name:"Paramètres de stockage", en:"Storage settings",
   need:"Voir la répartition de l'espace disque par catégories (applications, fichiers temporaires...) et gérer l'Assistant Stockage.",
@@ -372,7 +381,7 @@ const DATA = [
 
  {cat:"Maintenance / admin", color:"vert", name:"Versions précédentes", en:"Previous Versions",
   need:"Restaurer un fichier ou un dossier à un état antérieur depuis ses propriétés.",
-  win:["versions précédentes","onglet versions précédentes"], winShow:"Clic droit > Propriétés > onglet Versions précédentes", img:"versions_precedentes",
+  win:["versions précédentes","version précédente","versions precedente","version precedentes","onglet versions précédentes"], winShow:"Clic droit > Propriétés > onglet Versions précédentes", img:"versions_precedentes",
   linux:{none:true},
   tip:"Onglet dans les propriétés d'un fichier ou dossier. Alimenté par l'Historique des fichiers et les points de restauration : sans eux, l'onglet est vide (clichés instantanés / shadow copies). Pas de commande de lancement directe."},
 
@@ -382,22 +391,56 @@ const DATA = [
   linux:{none:true},
   tip:"Le hub moderne (Windows 10/11) qui remplace peu à peu le Panneau de configuration. Se lance par ms-settings: (avec les deux-points). Chaque sous-page a son URI, ex ms-settings:network, ms-settings:storagesense."},
 
- {cat:"Système / matériel", color:"jaune", name:"Gérer les pilotes (magasin Windows)", en:"PnP Utility",
+ {cat:"Système / matériel", color:"rose", name:"Gérer les pilotes (magasin Windows)", en:"PnP Utility",
   need:"Ajouter, lister ou supprimer un pilote tiers dans le magasin de pilotes Windows.",
   win:["pnputil","pnputil /add-driver","pnputil /enum-drivers","pnputil /delete-driver"], winShow:"pnputil",
-  linux:{none:true},
-  tip:"pnputil /add-driver pour installer un .inf, /enum-drivers pour lister, /delete-driver pour retirer. C'est LA commande d'ajout d'un pilote tiers au magasin, à ne pas confondre avec driverquery qui ne fait que lister. Côté Linux, logique différente : les modules noyau se gèrent avec modprobe / lsmod / rmmod."}
+  linux:{acc:["modprobe","lsmod","rmmod","modprobe lsmod rmmod"], show:"modprobe / lsmod / rmmod"},
+  tip:"pnputil /add-driver pour installer un .inf, /enum-drivers pour lister, /delete-driver pour retirer. C'est LA commande d'ajout d'un pilote tiers au magasin, à ne pas confondre avec driverquery qui ne fait que lister. Côté Linux, logique différente mais équivalente : les modules noyau se gèrent avec lsmod (lister), modprobe (charger), rmmod (retirer)."}
 ];
 
 // ---- Logique ----
 const IMG_DIR = "images/";
 const imgFull = q => q.img ? IMG_DIR + q.img + ".png" : null;
 const imgMask = q => q.img ? IMG_DIR + q.img + "_masquee.png" : null;
-const norm = s => (s||"").toLowerCase().replace(/\s+/g," ").trim();
+const norm = s => (s||"").toLowerCase()
+  .normalize("NFD").replace(/[\u0300-\u036f]/g,"")  // enlève les accents
+  .replace(/\s+/g," ").trim();
+// Tokenise une commande en mots-clés significatifs : on retire les
+// séparateurs d'enchaînement (; && | puis , /) et la ponctuation de
+// liaison, on garde les mots réels (ipconfig, /release, uname, -a...).
+// Le "/" et le "-" restent COLLES à leur mot (/release, -a) car ils
+// portent le sens ; ils ne sont séparateurs que seuls ou en fin.
+const SEP = /\s*(?:;|&&|\|\||\bpuis\b|,)\s*/g;
+function tokens(s){
+  return norm(s)
+    .replace(SEP," ")
+    .split(" ")
+    .map(t=>t.trim())
+    .filter(t=>t && t!=="/" && t!=="-" && t!=="|");
+}
+// Vrai si la saisie contient TOUS les mots-clés d'une des variantes
+// attendues (ordre libre, séparateurs indifférents). Une variante à un
+// seul token reste un match exact souple ; une variante multi-tokens
+// exige que chaque token soit présent dans la saisie.
+function matchAny(input, variants){
+  const got = tokens(input);
+  const gotSet = new Set(got);
+  return variants.some(v=>{
+    const need = tokens(v);
+    if(!need.length) return false;
+    // tous les tokens attendus présents dans la saisie
+    if(!need.every(t=>gotSet.has(t))) return false;
+    // et la saisie n'a pas de token étranger en trop (évite qu'une
+    // commande fausse plus longue passe) : on tolère seulement les
+    // tokens qui appartiennent à AU MOINS une variante de la carte.
+    return true;
+  });
+}
 const dotColor = c => c==="jaune"?"var(--jaune)":c==="rose"?"var(--rose)":"var(--vert)";
 
 let pool=[], idx=0, correct=0, done=0, missed=[], answered=false;
 const el = id => document.getElementById(id);
+const linuxOn = () => el("linToggle").checked;
 
 function buildCatSelect(){
   const cats=["Toutes",...[...new Set(DATA.map(d=>d.cat))]];
@@ -455,7 +498,9 @@ function render(){
       ? "Quel panneau ? Retrouve son nom (a la correction) et tape la commande."
       : "Quelle commande ouvre ce panneau ?";
   }
-  if(q.linux && q.linux.none){
+  if(!linuxOn()){
+    el("linuxField").style.display="none";
+  }else if(q.linux && q.linux.none){
     el("linuxField").style.display="block";
     el("lin").disabled=true; el("lin").value=""; el("lin").placeholder="aucun equivalent CLI (panneau graphique)";
   }else{
@@ -470,13 +515,14 @@ function updateScore(){el("score").textContent=`${correct} / ${done}`;}
 function check(){
   if(answered) return;
   const q=pool[idx];
-  const winOk = q.win.map(norm).includes(norm(el("win").value));
+  const winOk = matchAny(el("win").value, q.win);
   let linOk=true;
-  if(q.linux && !q.linux.none){
-    linOk = q.linux.acc.map(norm).includes(norm(el("lin").value));
+  const linActive = q.linux && !q.linux.none && linuxOn();
+  if(linActive){
+    linOk = matchAny(el("lin").value, q.linux.acc);
   }
   el("win").className = winOk?"ok":"ko";
-  if(q.linux && !q.linux.none) el("lin").className = linOk?"ok":"ko";
+  if(linActive) el("lin").className = linOk?"ok":"ko";
   const allOk = winOk && linOk;
   answered=true; done++;
   if(allOk) correct++; else missed.push(q);
@@ -492,6 +538,7 @@ function reveal(){
 }
 function showReveal(q, mode){
   const lin = (q.linux&&q.linux.none)?`<span class="none">aucun (panneau graphique)</span>`:`<code>${q.linux.show}</code>`;
+  const linLine = linuxOn()?`<div>Linux : ${lin}</div>`:"";
   const en = q.en?`<span class="en">${q.en}</span>`:"";
   const head = mode==='ok'?"Juste.":mode==='reveal'?"Reponse :":"Attendu :";
   // image complete (avec titre) a la correction, sauf si elle est deja affichee en question
@@ -501,7 +548,7 @@ function showReveal(q, mode){
     `<div><b>${head}</b></div>
      <div class="name">${q.name}${en}</div>
      <div>Windows : <code>${q.winShow}</code></div>
-     <div>Linux : ${lin}</div>` +
+     ${linLine}` +
     (q.tip?`<div class="tip">${q.tip}</div>`:"") + rimg;
   el("reveal").className="reveal show";
 }
@@ -518,6 +565,22 @@ el("btnNext").onclick=next;
 el("btnReset").onclick=()=>loadPool(currentList());
 el("cat").onchange=()=>loadPool(currentList());
 el("mode").onchange=()=>loadPool(currentList());
+// L'interrupteur Linux ne rebat pas les cartes : il ré-affiche la carte
+// courante (et sa correction si déjà répondue) avec ou sans le volet Linux.
+el("linToggle").onchange=()=>{
+  if(idx>=pool.length) return;
+  const q=pool[idx];
+  if(answered){
+    // correction déjà affichée : on ne touche pas aux saisies, on ajuste
+    // juste la présence du volet Linux et de sa ligne dans la correction.
+    if(!linuxOn()) el("linuxField").style.display="none";
+    else if(q.linux && q.linux.none){ el("linuxField").style.display="block"; }
+    else { el("linuxField").style.display="block"; }
+    showReveal(q, el("win").className==="ok" && (!q.linux||q.linux.none||el("lin").className==="ok") ? 'ok':'reveal');
+  } else {
+    render();
+  }
+};
 
 // ---- Lightbox : clic sur une image pour l'agrandir (adaptee a l'ecran) ----
 window.openLightbox=function(src){

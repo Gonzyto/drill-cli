@@ -208,6 +208,12 @@ const DATA = [
   linux:{acc:["uname -a","lsb_release -a","uname -a cat /etc/os-release uptime lshw -short","uname -a cat /etc/os-release uptime","uname -a lshw -short"], show:"uname -a  ;  cat /etc/os-release  ;  uptime  ;  lshw -short"},
   tip:"Recomposé côté Linux : une commande par info. uname -a donne l'OS et le noyau, cat /etc/os-release la distrib, uptime la durée de fonctionnement, et lshw -short le matériel de base (que les autres ne montrent pas). uname -a seul suffit pour valider ici."},
 
+ {cat:"Système / matériel", color:"jaune", name:"Lister le contenu d'un dossier", en:"directory",
+  need:"Afficher la liste des fichiers et dossiers du répertoire courant.",
+  win:["dir","dir /a","dir /s"], winShow:"dir",
+  linux:{acc:["ls","ls -l","ls -la","ls -al","ls -a"], show:"ls   (souvent  ls -l  ou  ls -la)"},
+  tip:"dir liste fichiers et dossiers du répertoire courant, et affiche l'espace libre du disque en bas. Options utiles : dir /a (inclut les fichiers cachés), dir /s (récursif dans les sous-dossiers). Équivalent Linux : ls, souvent en ls -l (format détaillé) ou ls -la (avec les fichiers cachés qui commencent par un point)."},
+
  {cat:"Système / matériel", color:"rose", name:"Informations système (panneau)", en:"Microsoft System Information",
   need:"Afficher le panneau graphique qui sort les infos complètes de la machine (matériel, composants).",
   win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",

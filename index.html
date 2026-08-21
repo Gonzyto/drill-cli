@@ -129,6 +129,12 @@ const DATA = [
   linux:{acc:["ip addr","ip a","ip address","ip addr; ip route; resolvectl status","ip addr ; ip route ; resolvectl status","ip addr; ip route","ip addr ; ip route","ip a && ip route","ip a; ip route"], show:"ip addr  ;  ip route  ;  resolvectl status"},
   tip:"Côté Linux c'est recomposé : ip addr (interfaces), ip route (passerelle), resolvectl status (DNS). ip addr seul suffit ici."},
 
+ {cat:"Réseau", color:"jaune", name:"Afficher le cache ARP", en:"Address Resolution Protocol",
+  need:"Afficher le cache des correspondances IP vers MAC des machines déjà contactées sur le réseau local.",
+  win:["arp -a","arp"], winShow:"arp -a",
+  linux:{acc:["ip neigh","ip neighbour","ip n","arp -a","arp"], show:"ip neigh   (ou  arp -a)"},
+  tip:"Le cache ARP associe une IP à sa MAC pour les machines contactées récemment sur le réseau local (ARP = Address Resolution Protocol : broadcast « qui a cette IP ? », la réponse remplit la MAC). C'est un CACHE, temporaire : il se remplit tout seul et s'oublie au bout de quelques minutes ou au reboot. À distinguer de la table MAC du switch (MAC ↔ port physique) : malgré son nom de « table », elle se comporte aussi comme un cache (apprise seule, expire ~5 min, perdue au reboot). La seule vraiment stable des trois, c'est la table de routage. ip neigh est la version moderne côté Linux ; pour vider : arp -d ou ip neigh flush all."},
+
  {cat:"Réseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
   need:"Vider le cache DNS local de la machine.",
   win:["ipconfig /flushdns","ipconfig/flushdns"], winShow:"ipconfig /flushdns",
@@ -265,7 +271,7 @@ const DATA = [
   tip:""},
 
  {cat:"Comptes / services", color:"jaune", name:"Comptes locaux",
-  need:"Lister les comptes utilisateurs locaux.",
+  need:"Lister les comptes utilisateurs locaux, sous forme de commande.",
   win:["net user"], winShow:"net user",
   linux:{acc:["cat /etc/passwd","getent passwd"], show:"cat /etc/passwd  (ou getent passwd)"},
   tip:"Consultation. Pour créer un compte, en vrai on ne tape pas net user /add : on passe par lusrmgr.msc (carte dédiée)."},

@@ -133,7 +133,7 @@ const DATA = [
   need:"Afficher le cache des correspondances IP vers MAC des machines déjà contactées sur le réseau local.",
   win:["arp -a","arp"], winShow:"arp -a",
   linux:{acc:["ip neigh","ip neighbour","ip n","arp -a","arp"], show:"ip neigh   (ou  arp -a)"},
-  tip:"Le cache ARP associe une IP à sa MAC pour les machines contactées récemment sur le réseau local (ARP = Address Resolution Protocol : broadcast « qui a cette IP ? », la réponse remplit la MAC). C'est un CACHE, temporaire : il se remplit tout seul et s'oublie au bout de quelques minutes ou au reboot. À distinguer de la table MAC du switch (MAC ↔ port physique) : malgré son nom de « table », elle se comporte aussi comme un cache (apprise seule, expire ~5 min, perdue au reboot). La seule vraiment stable des trois, c'est la table de routage. ip neigh est la version moderne côté Linux ; pour vider : arp -d ou ip neigh flush all."},
+  tip:"Le cache ARP associe une IP à sa MAC pour les machines contactées récemment sur le réseau local (ARP = Address Resolution Protocol : broadcast « qui a cette IP ? », la réponse remplit la MAC).<br>C'est un CACHE, temporaire : il se remplit tout seul et s'oublie au bout de quelques minutes ou au reboot.<br>À distinguer de la table MAC du switch (MAC ↔ port physique) : malgré son nom de « table », elle se comporte aussi comme un cache (apprise seule, expire ~5 min, perdue au reboot).<br>La seule vraiment stable des trois, c'est la table de routage.<br>ip neigh est la version moderne côté Linux ; pour vider : arp -d ou ip neigh flush all."},
 
  {cat:"Réseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
   need:"Vider le cache DNS local de la machine.",
@@ -145,19 +145,19 @@ const DATA = [
   need:"Afficher le contenu du cache DNS local (ce que la machine a déjà résolu).",
   win:["ipconfig /displaydns","ipconfig/displaydns"], winShow:"ipconfig /displaydns",
   linux:{acc:["resolvectl status","resolvectl","systemd-resolve --status"], show:"resolvectl status"},
-  tip:"Pas d'équivalent strict côté Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache. /flushdns pour vider."},
+  tip:"Pas d'équivalent strict côté Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache.<br>/flushdns pour vider."},
 
  {cat:"Réseau", color:"jaune", name:"Renouveler le bail DHCP", en:"release / renew",
   need:"Larguer l'adresse IP obtenue en DHCP, puis en redemander une neuve au serveur.",
   win:["ipconfig /release puis ipconfig /renew","ipconfig /release; ipconfig /renew","ipconfig /release ; ipconfig /renew","ipconfig /release && ipconfig /renew","ipconfig /release","ipconfig/release","ipconfig /renew","ipconfig/renew"], winShow:"ipconfig /release   puis   ipconfig /renew",
   linux:{acc:["sudo dhclient -r; sudo dhclient","sudo dhclient -r ; sudo dhclient","dhclient -r; dhclient","dhclient -r ; dhclient","sudo dhclient -r && sudo dhclient","dhclient -r","sudo dhclient -r","dhclient","sudo dhclient"], show:"sudo dhclient -r   puis   sudo dhclient"},
-  tip:"Deux temps : /release largue le bail, /renew en redemande un. Réflexe quand la machine se retrouve en 169.254.x.x (APIPA = elle n'a joint aucun serveur DHCP). Côté Linux moderne géré par NetworkManager, on ferait plutôt nmcli con down puis up."},
+  tip:"Deux temps : /release largue le bail, /renew en redemande un.<br>Réflexe quand la machine se retrouve en 169.254.x.x (APIPA = elle n'a joint aucun serveur DHCP).<br>Côté Linux moderne géré par NetworkManager, on ferait plutôt nmcli con down puis up."},
 
  {cat:"Réseau", color:"jaune", name:"Tester la connectivité", en:"ping",
   need:"Tester si une machine distante répond (envoi ICMP echo request).",
   win:["ping","ping 8.8.8.8"], winShow:"ping <hote>",
   linux:{acc:["ping","ping 8.8.8.8"], show:"ping <hote>"},
-  tip:"ICMP, couche 3, sans handshake ni état de connexion (contrairement a TCP). La machine répond par un ICMP echo reply."},
+  tip:"ICMP, couche 3, sans handshake ni état de connexion (contrairement a TCP).<br>La machine répond par un ICMP echo reply."},
 
  {cat:"Réseau", color:"jaune", name:"Itinéraire / chemin emprunté", en:"trace route",
   need:"Afficher le chemin (chaque routeur traversé) emprunté pour atteindre un hôte.",
@@ -169,25 +169,25 @@ const DATA = [
   need:"Afficher la table de routage de la machine (par ou sort le trafic).",
   win:["route print"], winShow:"route print",
   linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
-  tip:"Route par défaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur. Ne pas confondre destination et passerelle."},
+  tip:"Route par défaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur.<br>Ne pas confondre destination et passerelle."},
 
  {cat:"Réseau", color:"jaune", name:"Lister les lecteurs réseau", en:"net use",
   need:"Lister les lecteurs réseau actuellement montés sur la machine.",
   win:["net use"], winShow:"net use",
   linux:{acc:["mount | grep cifs","mount grep cifs","mount | grep -i cifs"], show:"mount | grep cifs"},
-  tip:"net use seul (sans argument) liste les lecteurs mappés. Erreur 67 (nom réseau introuvable) = le partage n'existe pas ou le chemin est faux. Côté Linux, on filtre la sortie de mount sur cifs (le protocole de partage Windows/SMB) pour ne voir que les montages réseau."},
+  tip:"net use seul (sans argument) liste les lecteurs mappés.<br>Erreur 67 (nom réseau introuvable) = le partage n'existe pas ou le chemin est faux.<br>Côté Linux, on filtre la sortie de mount sur cifs (le protocole de partage Windows/SMB) pour ne voir que les montages réseau."},
 
  {cat:"Réseau", color:"jaune", name:"Monter un partage distant", en:"map / mount share",
   need:"Monter un partage distant sur une lettre de lecteur (commande complète, avec chemin).",
   win:["net use z: \\\\serveur\\partage","net use \\\\serveur\\partage","net use z:","net use p: \\\\serveur\\partage"], winShow:"net use Z: \\\\serveur\\partage",
   linux:{acc:["sudo mount -t cifs //serveur/partage /mnt/point","mount -t cifs //serveur/partage /mnt/point","sudo mount -t cifs","mount -t cifs"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
-  tip:"La vraie paire commande-à-commande. Windows : net use + lettre + chemin UNC (double antislash). Linux : -t cifs indique le type de système de fichiers (cifs = le protocole de partage Windows, aussi appelé SMB), //serveur/partage est la source (slashs simples), /mnt/point le dossier local qui doit déjà exister. Option fréquente : -o username=ton_user pour les identifiants."},
+  tip:"La vraie paire commande-à-commande.<br>Windows : net use + lettre + chemin UNC (double antislash).<br>Linux : -t cifs indique le type de système de fichiers (cifs = le protocole de partage Windows, aussi appelé SMB), //serveur/partage est la source (slashs simples), /mnt/point le dossier local qui doit déjà exister.<br>Option fréquente : -o username=ton_user pour les identifiants."},
 
  {cat:"Réseau", color:"vert", name:"Connexions réseau (cartes)", en:"Network Connections",
   need:"Agir sur une interface : IP statique, DNS manuel, activer / désactiver.",
   win:["ncpa.cpl"], winShow:"ncpa.cpl", img:"connexions_reseaux",
   linux:{none:true},
-  tip:"Console d'action, ne pas confondre avec ipconfig / ip addr qui ne font que lire. Équivalent CLI Linux : ip link set, ip addr add/del."},
+  tip:"Console d'action, ne pas confondre avec ipconfig / ip addr qui ne font que lire.<br>Équivalent CLI Linux : ip link set, ip addr add/del."},
 
  {cat:"Réseau", color:"vert", name:"Paramètres réseau (profil Public/Privé)",
   need:"Basculer le profil réseau entre Public et Privé.",
@@ -206,7 +206,7 @@ const DATA = [
   need:"Consulter les infos de la machine en ligne de commande (OS, version, uptime, matériel de base).",
   win:["systeminfo"], winShow:"systeminfo",
   linux:{acc:["uname -a","lsb_release -a","uname -a cat /etc/os-release uptime lshw -short","uname -a cat /etc/os-release uptime","uname -a lshw -short"], show:"uname -a  ;  cat /etc/os-release  ;  uptime  ;  lshw -short"},
-  tip:"Recomposé côté Linux : une commande par info. uname -a donne l'OS et le noyau, cat /etc/os-release la distrib, uptime la durée de fonctionnement, et lshw -short le matériel de base (que les autres ne montrent pas). uname -a seul suffit pour valider ici."},
+  tip:"Recomposé côté Linux : une commande par info.<br>uname -a donne l'OS et le noyau, cat /etc/os-release la distrib, uptime la durée de fonctionnement, et lshw -short le matériel de base (que les autres ne montrent pas).<br>uname -a seul suffit pour valider ici."},
 
  {cat:"Système / matériel", color:"jaune", name:"Lister le contenu d'un dossier", en:"directory",
   need:"Afficher la liste des fichiers et dossiers du répertoire courant.",
@@ -214,11 +214,17 @@ const DATA = [
   linux:{acc:["ls","ls -l","ls -la","ls -al","ls -a"], show:"ls   (souvent  ls -l  ou  ls -la)"},
   tip:"dir liste fichiers et dossiers du répertoire courant, et affiche l'espace libre du disque en bas. Options utiles : dir /a (inclut les fichiers cachés), dir /s (récursif dans les sous-dossiers). Équivalent Linux : ls, souvent en ls -l (format détaillé) ou ls -la (avec les fichiers cachés qui commencent par un point)."},
 
+ {cat:"Système / matériel", color:"rose", name:"Espace disque", en:"disk free",
+  need:"Afficher l'espace libre et utilisé des disques / partitions.",
+  win:["wmic logicaldisk","wmic logicaldisk get size,freespace,caption","get-psdrive","wmic logicaldisk get","fsutil volume diskfree c:"], winShow:"wmic logicaldisk get size,freespace,caption   (ou  Get-PSDrive)",
+  linux:{acc:["df -h","df"], show:"df -h"},
+  tip:"df = disk free : l'espace libre et utilisé par partition montée.<br>-h = human-readable : en Go/Mo au lieu d'octets bruts.<br>Réflexe n°1 quand une machine rame ou plante : un disque plein.<br>Ne pas confondre : du = disk usage (poids d'un dossier précis), lsblk = structure des disques, free -h = la RAM (pas le disque)."},
+
  {cat:"Système / matériel", color:"rose", name:"Informations système (panneau)", en:"Microsoft System Information",
   need:"Afficher le panneau graphique qui sort les infos complètes de la machine (matériel, composants).",
   win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",
   linux:{acc:["lscpu","lscpu lsblk free -h lshw -short","lscpu lsblk free -h","lshw -short"], show:"lscpu  ;  lsblk  ;  free -h  ;  lshw -short"},
-  tip:"Panneau de consultation, on ne modifie rien (à l'inverse de sysdm.cpl). Côté Linux, lscpu (CPU), lsblk (disques), free -h (RAM) et lshw -short (vue matériel complète) se complètent. lscpu seul suffit pour valider."},
+  tip:"Panneau de consultation, on ne modifie rien (à l'inverse de sysdm.cpl).<br>Côté Linux, lscpu (CPU), lsblk (disques), free -h (RAM) et lshw -short (vue matériel complète) se complètent.<br>lscpu seul suffit pour valider."},
 
  {cat:"Système / matériel", color:"vert", name:"Propriétés système", en:"System Properties",
   need:"Renommer le PC ou le joindre a un domaine.",
@@ -280,7 +286,7 @@ const DATA = [
   need:"Lister les comptes utilisateurs locaux, sous forme de commande.",
   win:["net user"], winShow:"net user",
   linux:{acc:["cat /etc/passwd","getent passwd"], show:"cat /etc/passwd  (ou getent passwd)"},
-  tip:"Consultation. Pour créer un compte, en vrai on ne tape pas net user /add : on passe par lusrmgr.msc (carte dédiée)."},
+  tip:"Consultation.<br>Pour créer un compte, en vrai on ne tape pas net user /add : on passe par lusrmgr.msc (carte dédiée)."},
 
  {cat:"Comptes / services", color:"vert", name:"Utilisateurs et groupes locaux", en:"Local Users Manager",
   need:"Ouvrir la console de gestion des comptes et groupes locaux.",
@@ -292,13 +298,13 @@ const DATA = [
   need:"Gérer les services / demons du système (demarrer, arreter, état), y compris ceux a l'arret.",
   win:["services.msc"], winShow:"services.msc", img:"services",
   linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
-  tip:"Uniquement les demons système. Montre aussi les services stoppes, contrairement au gestionnaire des tâches. Pour voir aussi ceux a l'arret : --all ou systemctl list-unit-files --type=service."},
+  tip:"Uniquement les demons système.<br>Montre aussi les services stoppes, contrairement au gestionnaire des tâches.<br>Pour voir aussi ceux a l'arret : --all ou systemctl list-unit-files --type=service."},
 
  {cat:"Comptes / services", color:"jaune", name:"État d'un service (ligne de commande)", en:"service control query",
   need:"Vérifier vite fait si un service tourne ou est arrêté, sans ouvrir la console graphique.",
   win:["sc.exe query","sc.exe query <service>","sc.exe query spooler","sc query","sc query <service>","sc query spooler","sc query wuauserv"], winShow:"sc.exe query <service>",
   linux:{acc:["systemctl status","systemctl status <service>","systemctl is-active","systemctl is-active <service>"], show:"systemctl status <service>"},
-  tip:"État renvoyé : 4 RUNNING ou 1 STOPPED. Piège PowerShell : sc y est un alias de Set-Content, donc 'sc query' écrit un fichier nommé query au lieu d'interroger le service. On tape sc.exe query. Équivalent natif PowerShell : Get-Service <service>. sc.exe qc <service> donne en plus le type de démarrage (AUTO / MANUAL / DISABLED)."},
+  tip:"État renvoyé : 4 RUNNING ou 1 STOPPED.<br>Piège PowerShell : sc y est un alias de Set-Content, donc 'sc query' écrit un fichier nommé query au lieu d'interroger le service. On tape sc.exe query.<br>Équivalent natif PowerShell : Get-Service &lt;service&gt;.<br>sc.exe qc &lt;service&gt; donne en plus le type de démarrage (AUTO / MANUAL / DISABLED)."},
 
  // --- Maintenance / admin ---
  {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers système", en:"System File Checker",
@@ -317,7 +323,7 @@ const DATA = [
   need:"Vérifier quelles stratégies de groupe se sont réellement appliquées au poste et à l'utilisateur.",
   win:["gpresult /r","gpresult/r","gpresult /r /scope computer","gpresult /scope:user /r"], winShow:"gpresult /r",
   linux:{none:true},
-  tip:"Le diagnostic AD par excellence : lecteur réseau, imprimante ou politique qui ne s'applique pas. gpupdate FORCE l'application, gpresult MONTRE ce qui a été appliqué. Les deux font la paire. Notion Active Directory, pas d'équivalent Linux direct."},
+  tip:"Le diagnostic AD par excellence : lecteur réseau, imprimante ou politique qui ne s'applique pas.<br>gpupdate FORCE l'application, gpresult MONTRE ce qui a été appliqué. Les deux font la paire.<br>Notion Active Directory, pas d'équivalent Linux direct."},
 
  {cat:"Maintenance / admin", color:"rose", name:"Verifier la sante du disque", en:"check disk",
   need:"Vérifier et réparer un disque (secteurs, système de fichiers).",
@@ -335,7 +341,7 @@ const DATA = [
   need:"Ouvrir les options d'alimentation (mode d'alimentation, mise en veille, comportement du bouton marche).",
   win:["powercfg.cpl"], winShow:"powercfg.cpl", img:"options_d_alimentation",
   linux:{none:true},
-  tip:"Panneau pur. Le vrai intérêt : savoir que 'Options d'alimentation' = powercfg.cpl. Côté Linux : powertop / tlp."},
+  tip:"Panneau pur.<br>Le vrai intérêt : savoir que 'Options d'alimentation' = powercfg.cpl.<br>Côté Linux : powertop / tlp."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (règles avancées)", en:"Windows Firewall",
   need:"Ouvrir le pare-feu avec règles de trafic entrant / sortant.",
@@ -350,7 +356,7 @@ const DATA = [
   tip:"Panneau pur. Côté Linux : apt remove."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Connexion Bureau a distance", en:"Microsoft Terminal Services Client",
-  need:"Lancer une connexion Bureau a distance vers une autre machine.",
+  need:"Se connecter graphiquement vers une autre machine.",
   win:["mstsc"], winShow:"mstsc", img:"connexion_bureau_a_distance",
   linux:{none:true},
   tip:"RDP, port 3389 (à bien retenir). Côté Linux : xfreerdp / rdesktop."},
@@ -359,55 +365,55 @@ const DATA = [
   need:"Vérifier qu'un service TCP répond sur un port précis (POP3 = 110, SMTP = 25, HTTP = 80).",
   win:["telnet <ip> <port>","telnet ip port","telnet 192.168.20.250 110","telnet"], winShow:"telnet <ip> <port>",
   linux:{acc:["telnet <ip> <port>","nc -zv <ip> <port>","nc <ip> <port>","telnet"], show:"telnet <ip> <port>   ou   nc -zv <ip> <port>"},
-  tip:"Séparateur ESPACE sous Windows, jamais deux-points : telnet 192.168.20.250 110, pas ...250:110. Client telnet désactivé par défaut sous Windows, équivalent PowerShell moderne : Test-NetConnection -Port 110. Sous Linux on utilise souvent nc (netcat)."},
+  tip:"Séparateur ESPACE sous Windows, jamais deux-points : telnet 192.168.20.250 110, pas ...250:110.<br>Client telnet désactivé par défaut sous Windows, équivalent PowerShell moderne : Test-NetConnection -Port 110.<br>Sous Linux on utilise souvent nc (netcat)."},
 
  {cat:"Réseau", color:"vert", name:"Connecter un lecteur réseau", en:"Map network drive",
   need:"Depuis Ce PC, mapper un partage réseau à une lettre de lecteur (Z:, P:...) via le menu graphique. Quel est ce menu ?",
   win:["connecter un lecteur reseau","connecter lecteur reseau"], winShow:"Clic droit sur Ce PC > Connecter un lecteur réseau", img:"connecter_lecteur_reseau",
   linux:{none:true},
-  tip:"Le geste graphique du quotidien en entreprise : il mappe une lettre (Z:, P:) vers un partage. Souvent posé automatiquement par une GPO ou un script de login qui utilise net use en coulisse. C'est un menu, pas une commande : pour la vraie commande, voir les cartes « Lister les lecteurs réseau » (net use) et « Monter un partage distant » (net use Z: \\\\serveur\\partage)."},
+  tip:"Le geste graphique du quotidien en entreprise : il mappe une lettre (Z:, P:) vers un partage.<br>Souvent posé automatiquement par une GPO ou un script de login qui utilise net use en coulisse.<br>C'est un menu, pas une commande : pour la vraie commande, voir les cartes « Lister les lecteurs réseau » (net use) et « Monter un partage distant » (net use Z: \\\\serveur\\partage)."},
 
  {cat:"Système / matériel", color:"vert", name:"Paramètres de stockage", en:"Storage settings",
   need:"Voir la répartition de l'espace disque par catégories (applications, fichiers temporaires...) et gérer l'Assistant Stockage.",
   win:["ms-settings:storagesense"], winShow:"ms-settings:storagesense", img:"parametres_de_stockage",
   linux:{none:true},
-  tip:"Paramètres > Système > Stockage. Vue par catégories de ce qui mange l'espace, à ne pas confondre avec Gestion des disques (diskmgmt.msc) qui gère partitions et volumes. Équivalent Linux en CLI : du -h ou ncdu."},
+  tip:"Paramètres > Système > Stockage.<br>Vue par catégories de ce qui mange l'espace, à ne pas confondre avec Gestion des disques (diskmgmt.msc) qui gère partitions et volumes.<br>Équivalent Linux en CLI : du -h ou ncdu."},
 
  {cat:"Diagnostic / process", color:"vert", name:"Moniteur de fiabilité", en:"Reliability Monitor",
   need:"Voir l'historique chronologique des pannes et l'indice de stabilité du poste sur les dernières semaines.",
   win:["perfmon /rel","perfmon/rel"], winShow:"perfmon /rel", img:"moniteur_de_fiabilite",
   linux:{none:true},
-  tip:"Frise chronologique, indice de stabilité de 1 à 10, échecs applications / Windows / divers. À distinguer du Moniteur de performance (perfmon seul) qui montre les compteurs en temps réel (CPU, RAM, disque). Ici l'historique des plantages, là les mesures live."},
+  tip:"Frise chronologique, indice de stabilité de 1 à 10, échecs applications / Windows / divers.<br>À distinguer du Moniteur de performance (perfmon seul) qui montre les compteurs en temps réel (CPU, RAM, disque).<br>Ici l'historique des plantages, là les mesures live."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Assistance à distance Windows", en:"Windows Remote Assistance",
   need:"Prendre la main sur la session EN COURS d'un utilisateur pour l'aider, l'utilisateur voit l'écran et interagit.",
   win:["msra","msra.exe"], winShow:"msra", img:"assistance_a_distance_windows",
   linux:{none:true},
-  tip:"À distinguer du Bureau à distance (mstsc) : le RDP ouvre une NOUVELLE session et verrouille l'écran local, l'Assistance à distance PARTAGE la session courante. Successeur moderne sous Windows : Assistance rapide (Quick Assist)."},
+  tip:"À distinguer du Bureau à distance (mstsc) : le RDP ouvre une NOUVELLE session et verrouille l'écran local, l'Assistance à distance PARTAGE la session courante.<br>Successeur moderne sous Windows : Assistance rapide (Quick Assist)."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Restauration du système", en:"System Restore",
   need:"Ramener le système à un point de restauration antérieur pour annuler un changement récent qui a cassé la machine.",
   win:["rstrui","rstrui.exe"], winShow:"rstrui", img:"restauration_du_systeme",
   linux:{none:true},
-  tip:"Restaure fichiers système, programmes et pilotes à une date antérieure, SANS toucher aux documents personnels. À distinguer de l'onglet Protection du système (sysdm.cpl) qui ACTIVE et configure les points. rstrui = l'acte, Protection = l'interrupteur."},
+  tip:"Restaure fichiers système, programmes et pilotes à une date antérieure, SANS toucher aux documents personnels.<br>À distinguer de l'onglet Protection du système (sysdm.cpl) qui ACTIVE et configure les points.<br>rstrui = l'acte, Protection = l'interrupteur."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Versions précédentes", en:"Previous Versions",
   need:"Restaurer un fichier ou un dossier à un état antérieur depuis ses propriétés.",
   win:["versions précédentes","version précédente","versions precedente","version precedentes","onglet versions précédentes"], winShow:"Clic droit > Propriétés > onglet Versions précédentes", img:"versions_precedentes",
   linux:{none:true},
-  tip:"Onglet dans les propriétés d'un fichier ou dossier. Alimenté par l'Historique des fichiers et les points de restauration : sans eux, l'onglet est vide (clichés instantanés / shadow copies). Pas de commande de lancement directe."},
+  tip:"Onglet dans les propriétés d'un fichier ou dossier.<br>Alimenté par l'Historique des fichiers et les points de restauration : sans eux, l'onglet est vide (clichés instantanés / shadow copies).<br>Pas de commande de lancement directe."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Paramètres (Windows)", en:"Settings",
   need:"Ouvrir le hub de configuration moderne de Windows (réseau, comptes, applications, système, tout au même endroit).",
   win:["ms-settings:","start ms-settings:"], winShow:"ms-settings:", img:"parametres",
   linux:{none:true},
-  tip:"Le hub moderne (Windows 10/11) qui remplace peu à peu le Panneau de configuration. Se lance par ms-settings: (avec les deux-points). Chaque sous-page a son URI, ex ms-settings:network, ms-settings:storagesense."},
+  tip:"Le hub moderne (Windows 10/11) qui remplace peu à peu le Panneau de configuration.<br>Se lance par ms-settings: (avec les deux-points).<br>Chaque sous-page a son URI, ex ms-settings:network, ms-settings:storagesense."},
 
  {cat:"Système / matériel", color:"rose", name:"Gérer les pilotes (magasin Windows)", en:"PnP Utility",
   need:"Ajouter, lister ou supprimer un pilote tiers dans le magasin de pilotes Windows.",
   win:["pnputil","pnputil /add-driver","pnputil /enum-drivers","pnputil /delete-driver"], winShow:"pnputil",
-  linux:{acc:["modprobe","lsmod","rmmod","modprobe lsmod rmmod"], show:"modprobe / lsmod / rmmod"},
-  tip:"pnputil /add-driver pour installer un .inf, /enum-drivers pour lister, /delete-driver pour retirer. C'est LA commande d'ajout d'un pilote tiers au magasin, à ne pas confondre avec driverquery qui ne fait que lister. Côté Linux, logique différente mais équivalente : les modules noyau se gèrent avec lsmod (lister), modprobe (charger), rmmod (retirer)."}
+  linux:{acc:["modprobe","lsmod","rmmod","modprobe lsmod rmmod","lsmod modprobe rmmod"], show:"lsmod / modprobe / rmmod"},
+  tip:"pnputil écrit dans le magasin de pilotes de Windows (Driver Store, dans System32).<br>Ordre logique : /enum-drivers (lister), /add-driver (ajouter un .inf), /delete-driver (retirer). On liste toujours avant d'ajouter ou supprimer.<br>.inf = Information File : le fichier qui décrit un pilote (matériel visé, fichiers, registre).<br>Intérêt : déployer des pilotes en masse par script PowerShell, au lieu du Gestionnaire de périphériques poste par poste.<br>Linux, même logique : lsmod (lister), modprobe (charger), rmmod (retirer)."}
 ];
 
 // ---- Logique ----
@@ -436,16 +442,22 @@ function tokens(s){
 // exige que chaque token soit présent dans la saisie.
 function matchAny(input, variants){
   const got = tokens(input);
+  if(!got.length) return false;
   const gotSet = new Set(got);
+  // Ensemble de TOUS les tokens légitimes de la carte (toutes variantes
+  // confondues) : sert à rejeter une commande parasite ajoutée à côté.
+  const allowed = new Set();
+  variants.forEach(v=>tokens(v).forEach(t=>allowed.add(t)));
+  // La saisie ne doit contenir AUCUN token étranger (ex. « systemctl »
+  // collé à « ip addr »). Sinon c'est faux, même si les bons mots-clés
+  // sont présents par ailleurs.
+  if(!got.every(t=>allowed.has(t))) return false;
+  // Et il faut qu'au moins une variante soit entièrement présente
+  // (ordre libre, séparateurs indifférents).
   return variants.some(v=>{
     const need = tokens(v);
     if(!need.length) return false;
-    // tous les tokens attendus présents dans la saisie
-    if(!need.every(t=>gotSet.has(t))) return false;
-    // et la saisie n'a pas de token étranger en trop (évite qu'une
-    // commande fausse plus longue passe) : on tolère seulement les
-    // tokens qui appartiennent à AU MOINS une variante de la carte.
-    return true;
+    return need.every(t=>gotSet.has(t));
   });
 }
 const dotColor = c => c==="jaune"?"var(--jaune)":c==="rose"?"var(--rose)":"var(--vert)";

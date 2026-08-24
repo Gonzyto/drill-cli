@@ -187,7 +187,7 @@ const DATA = [
   need:"Agir sur une interface : IP statique, DNS manuel, activer / désactiver.",
   win:["ncpa.cpl"], winShow:"ncpa.cpl", img:"connexions_reseaux",
   linux:{none:true},
-  tip:"Le panneau qui liste les cartes réseau de la machine et permet d'AGIR dessus : poser une IP statique, forcer un DNS manuel, activer ou désactiver une interface, renommer une carte.<br>ncpa.cpl = Network Connections Provider Application, .cpl = Control Panel Item (un module du Panneau de configuration).<br>Console d'ACTION, à ne pas confondre avec ipconfig ou ip addr qui ne font que LIRE la configuration.<br>C'est ici qu'on passe en IPv4 > Propriétés pour basculer entre DHCP et adressage manuel.<br>Équivalent CLI Linux : ip link set (activer/désactiver), ip addr add/del (poser une IP)."},
+  tip:"Le panneau qui liste les cartes réseau de la machine et permet d'AGIR dessus : poser une IP statique, forcer un DNS manuel, activer ou désactiver une interface, renommer une carte.<br>ncpa.cpl = Network Connections Provider Application, .cpl = Control Panel appLet (applet = petite application, un module du Panneau de configuration).<br>Console d'ACTION, à ne pas confondre avec ipconfig ou ip addr qui ne font que LIRE la configuration.<br>C'est ici qu'on passe en IPv4 > Propriétés pour basculer entre DHCP et adressage manuel.<br>Équivalent CLI Linux : ip link set (activer/désactiver), ip addr add/del (poser une IP)."},
 
  {cat:"Réseau", color:"vert", name:"Paramètres réseau (profil Public/Privé)",
   need:"Basculer le profil réseau entre Public et Privé.",
@@ -230,7 +230,7 @@ const DATA = [
   need:"Renommer le PC ou le joindre a un domaine.",
   win:["sysdm.cpl"], winShow:"sysdm.cpl", img:"proprietes_systeme",
   linux:{none:true},
-  tip:"Le panneau qui donne l'identité de la machine sur le réseau et ses réglages système : renommer le PC, le joindre à un domaine ou à un groupe de travail, activer le Bureau à distance, régler les performances et la protection du système.<br>sysdm.cpl = System Device Manager Control Panel, historiquement le module Système du Panneau de configuration.<br>Console d'ACTION, à l'inverse de msinfo32 où on ne fait que consulter.<br>C'est ici que se trouve l'onglet Protection du système qui active les points de restauration utilisés par rstrui."},
+  tip:"Le panneau qui donne l'identité de la machine sur le réseau et ses réglages système : renommer le PC, le joindre à un domaine ou à un groupe de travail, activer le Bureau à distance, régler les performances et la protection du système.<br>sysdm.cpl = System Device Manager, .cpl = Control Panel appLet (applet = petite application) : historiquement le module Système du Panneau de configuration.<br>Console d'ACTION, à l'inverse de msinfo32 où on ne fait que consulter.<br>C'est ici que se trouve l'onglet Protection du système qui active les points de restauration utilisés par rstrui."},
 
  {cat:"Système / matériel", color:"rose", name:"Gestionnaire de périphériques", en:"Device Management",
   need:"Voir le matériel détecté et l'état des pilotes (périphérique inconnu, pilote manquant).",
@@ -302,9 +302,9 @@ const DATA = [
 
  {cat:"Comptes / services", color:"jaune", name:"État d'un service (ligne de commande)", en:"service control query",
   need:"Vérifier vite fait si un service tourne ou est arrêté, sans ouvrir la console graphique.",
-  win:["sc.exe query","sc.exe query <service>","sc.exe query spooler","sc query","sc query <service>","sc query spooler","sc query wuauserv"], winShow:"sc.exe query <service>",
+  win:["sc.exe query","sc.exe query <service>","sc.exe query spooler","sc query","sc query <service>","sc query spooler","sc query wuauserv","get-service","get service","get-service <service>","get service <service>","get-service spooler","getservice"], winShow:"sc.exe query <service>   (ou  Get-Service <service>)",
   linux:{acc:["systemctl status","systemctl status <service>","systemctl is-active","systemctl is-active <service>"], show:"systemctl status <service>"},
-  tip:"Vérifie en une commande si un service tourne ou est arrêté, sans ouvrir la console graphique.<br>sc = service control. query interroge l'état, qc (query config) donne en plus le type de démarrage (AUTO / MANUAL / DISABLED).<br>État renvoyé : 4 RUNNING ou 1 STOPPED.<br>Piège PowerShell : sc y est un alias de Set-Content, donc sc query écrit un fichier nommé query au lieu d'interroger le service. On tape sc.exe query. Équivalent natif : Get-Service &lt;service&gt;.<br>Linux : systemctl status &lt;service&gt;."},
+  tip:"Vérifie en une commande si un service tourne ou est arrêté, sans ouvrir la console graphique.<br>sc = service control. query interroge l'état, qc (query config) donne en plus le type de démarrage (AUTO / MANUAL / DISABLED).<br>État renvoyé : 4 RUNNING ou 1 STOPPED.<br>Équivalent natif PowerShell : Get-Service &lt;service&gt;. Nuance : sc.exe query seul ne liste que les services actifs, Get-Service liste tout, actifs et arrêtés ; en revanche Get-Service ne donne pas le type de démarrage, il faut sc.exe qc pour ça.<br>Piège PowerShell : sc y est un alias de Set-Content, donc sc query écrit un fichier nommé query au lieu d'interroger le service. On tape sc.exe query.<br>Linux : systemctl status &lt;service&gt;."},
 
  // --- Maintenance / admin ---
  {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers système", en:"System File Checker",
@@ -341,7 +341,7 @@ const DATA = [
   need:"Ouvrir les options d'alimentation (mode d'alimentation, mise en veille, comportement du bouton marche).",
   win:["powercfg.cpl"], winShow:"powercfg.cpl", img:"options_d_alimentation",
   linux:{none:true},
-  tip:"Le panneau qui règle le comportement énergétique de la machine : mode d'alimentation, mise en veille de l'écran et du disque, action du bouton marche et de la fermeture du capot.<br>powercfg.cpl = power configuration, .cpl = Control Panel Item.<br>C'est ici qu'on désactive le démarrage rapide, coupable classique de postes qui redémarrent mal ou qui gardent un état incohérent.<br>Il existe aussi powercfg en ligne de commande, notamment powercfg /batteryreport et powercfg /energy.<br>Linux : powertop, tlp."},
+  tip:"Le panneau qui règle le comportement énergétique de la machine : mode d'alimentation, mise en veille de l'écran et du disque, action du bouton marche et de la fermeture du capot.<br>powercfg.cpl = power configuration, .cpl = Control Panel appLet (applet = petite application).<br>C'est ici qu'on désactive le démarrage rapide, coupable classique de postes qui redémarrent mal ou qui gardent un état incohérent.<br>Il existe aussi powercfg en ligne de commande, notamment powercfg /batteryreport et powercfg /energy.<br>Linux : powertop, tlp."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (règles avancées)", en:"Windows Firewall",
   need:"Ouvrir le pare-feu avec règles de trafic entrant / sortant.",
@@ -353,10 +353,10 @@ const DATA = [
   need:"Ouvrir l'ajout / suppression de programmes pour désinstaller ou modifier un logiciel.",
   win:["appwiz.cpl"], winShow:"appwiz.cpl", img:"programmes_et_fonctionnalites",
   linux:{none:true},
-  tip:"Le panneau qui liste tous les logiciels installés sur la machine et permet de les désinstaller, les modifier ou les réparer.<br>appwiz.cpl = application wizard, .cpl = Control Panel Item.<br>Donne aussi la date d'installation, l'éditeur, la version et le poids : utile pour repérer un logiciel indésirable arrivé récemment.<br>Le lien Activer ou désactiver des fonctionnalités Windows, dans la colonne de gauche, sert à ajouter des composants comme le client Telnet ou Hyper-V.<br>Linux : apt remove &lt;paquet&gt;."},
+  tip:"Le panneau qui liste tous les logiciels installés sur la machine et permet de les désinstaller, les modifier ou les réparer.<br>appwiz.cpl = application wizard, .cpl = Control Panel appLet (applet = petite application).<br>Donne aussi la date d'installation, l'éditeur, la version et le poids : utile pour repérer un logiciel indésirable arrivé récemment.<br>Le lien Activer ou désactiver des fonctionnalités Windows, dans la colonne de gauche, sert à ajouter des composants comme le client Telnet ou Hyper-V.<br>Linux : apt remove &lt;paquet&gt;."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Connexion Bureau a distance", en:"Microsoft Terminal Services Client",
-  need:"Se connecter graphiquement vers une autre machine.",
+  need:"Se connecter graphiquement vers une autre machine EN OUVRANT UNE NOUVELLE SESSION : l'écran local se verrouille, l'utilisateur devant le poste ne voit rien.",
   win:["mstsc"], winShow:"mstsc", img:"connexion_bureau_a_distance",
   linux:{none:true},
   tip:"Le client qui ouvre une session graphique complète sur une machine distante, comme si on était assis devant.<br>mstsc = Microsoft Terminal Services Client. Protocole RDP = Remote Desktop Protocol, port 3389 (à bien retenir).<br>Ouvre une NOUVELLE session et VERROUILLE l'écran local : l'utilisateur devant le poste ne voit rien de ce que tu fais.<br>C'est toute la différence avec msra (Assistance à distance) qui partage la session en cours.<br>Linux : xfreerdp ou rdesktop."},
@@ -386,7 +386,7 @@ const DATA = [
   tip:"Affiche l'historique chronologique des pannes du poste sur les dernières semaines, sous forme de frise, avec un indice de stabilité noté de 1 à 10.<br>perfmon = performance monitor, /rel = reliability (fiabilité).<br>Regroupe les échecs d'applications, les échecs Windows, les avertissements et les installations : on voit tout de suite si les plantages ont commencé le jour d'une mise à jour ou d'un nouveau pilote.<br>À distinguer du Moniteur de performance (perfmon seul) qui montre les compteurs en TEMPS RÉEL (CPU, RAM, disque). Ici l'historique des plantages, là les mesures live.<br>Le plus lisible des outils de diagnostic pour un utilisateur non technique."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Assistance à distance Windows", en:"Windows Remote Assistance",
-  need:"Prendre la main sur la session EN COURS d'un utilisateur pour l'aider, l'utilisateur voit l'écran et interagit.",
+  need:"Se connecter graphiquement vers une autre machine SANS ouvrir de nouvelle session : on prend la main sur la session EN COURS, l'utilisateur voit l'écran et interagit.",
   win:["msra","msra.exe"], winShow:"msra", img:"assistance_a_distance_windows",
   linux:{none:true},
   tip:"PARTAGE la session EN COURS de l'utilisateur : il reste devant son écran, il voit tout ce que tu fais et il peut continuer à cliquer avec toi.<br>msra = Microsoft Remote Assistance.<br>L'outil du dépannage pédagogique : on montre à l'utilisateur pendant qu'on corrige.<br>À distinguer de mstsc (Bureau à distance), qui lui ouvre une NOUVELLE session et verrouille l'écran local : l'utilisateur ne voit alors plus rien.<br>Successeur moderne sous Windows : Assistance rapide (Quick Assist)."},
@@ -413,7 +413,7 @@ const DATA = [
   need:"Ajouter, lister ou supprimer un pilote tiers dans le magasin de pilotes Windows.",
   win:["pnputil","pnputil /add-driver","pnputil /enum-drivers","pnputil /delete-driver"], winShow:"pnputil",
   linux:{acc:["modprobe","lsmod","rmmod","modprobe lsmod rmmod","lsmod modprobe rmmod"], show:"lsmod / modprobe / rmmod"},
-  tip:"Ajoute, liste ou supprime un pilote tiers dans le magasin de pilotes de Windows, en ligne de commande.<br>pnputil = Plug and Play Utility. Le Plug and Play est la technologie qui détecte et configure automatiquement le matériel qu'on branche. Le magasin (Driver Store) vit dans System32.<br>Ordre logique : /enum-drivers (lister), /add-driver (ajouter un .inf), /delete-driver (retirer). On liste toujours avant d'ajouter ou de supprimer.<br>.inf = Information File : le fichier qui décrit un pilote (matériel visé, fichiers à copier, clés de registre).<br>Intérêt : déployer des pilotes en masse par script PowerShell, au lieu du Gestionnaire de périphériques poste par poste. Linux, même logique : lsmod (lister), modprobe (charger), rmmod (retirer)."}
+  tip:"Ajoute, liste ou supprime un pilote tiers dans le magasin de pilotes de Windows, en ligne de commande.<br>pnputil = Plug and Play Utility. Le Plug and Play est la technologie qui détecte et configure automatiquement le matériel qu'on branche. Le magasin s'appelle le Driver Store : C:\\Windows\\System32\\DriverStore\\FileRepository (à ne pas confondre avec System32\\drivers, qui contient les .sys en service).<br>Ordre logique : /enum-drivers (lister), /add-driver (ajouter un .inf), /delete-driver (retirer). On liste toujours avant d'ajouter ou de supprimer.<br>.inf = Information File : le fichier qui décrit un pilote (matériel visé, fichiers à copier, clés de registre).<br>Intérêt : déployer des pilotes en masse par script PowerShell, au lieu du Gestionnaire de périphériques poste par poste. Linux, même logique : lsmod (lister), modprobe (charger), rmmod (retirer)."}
 ];
 
 // ---- Logique ----

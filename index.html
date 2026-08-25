@@ -133,7 +133,7 @@ const DATA = [
   need:"Afficher le cache des correspondances IP vers MAC des machines déjà contactées sur le réseau local.",
   win:["arp -a","arp"], winShow:"arp -a",
   linux:{acc:["ip neigh","ip neighbour","ip n","arp -a","arp"], show:"ip neigh   (ou  arp -a)"},
-  tip:"Le cache ARP associe une IP à sa MAC pour les machines contactées récemment sur le réseau local (ARP = Address Resolution Protocol : broadcast « qui a cette IP ? », la réponse remplit la MAC).<br>C'est un CACHE, temporaire : il se remplit tout seul et s'oublie au bout de quelques minutes ou au reboot.<br>À distinguer de la table MAC du switch (MAC ↔ port physique) : malgré son nom de « table », elle se comporte aussi comme un cache (apprise seule, expire ~5 min, perdue au reboot).<br>La seule vraiment stable des trois, c'est la table de routage.<br>ip neigh est la version moderne côté Linux ; pour vider : arp -d ou ip neigh flush all."},
+  tip:"Le cache ARP associe une IP à sa MAC pour les machines contactées récemment sur le réseau local (ARP = Address Resolution Protocol : broadcast « qui a cette IP ? », la réponse remplit la MAC).<br>C'est un CACHE, temporaire : il se remplit tout seul et s'oublie au bout de quelques minutes ou au reboot.<br>À distinguer de la table MAC du switch (MAC ↔ port physique) : malgré son nom de « table », elle se comporte aussi comme un cache (apprise seule, expire ~5 min, perdue au reboot).<br>La seule vraiment stable des trois, c'est la table de routage.<br>Options : -a = all (tout le cache), -d = delete (vider une entrée ou tout), -s = static (ajouter une entrée manuelle).<br>ip neigh est la version moderne côté Linux ; pour vider : arp -d ou ip neigh flush all."},
 
  {cat:"Réseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
   need:"Vider le cache DNS local de la machine.",
@@ -295,7 +295,7 @@ const DATA = [
   tip:"La console graphique de gestion des comptes et groupes locaux : créer un utilisateur, changer un mot de passe, désactiver un compte, ajouter quelqu'un au groupe Administrateurs.<br>lusrmgr.msc = local users manager, .msc = Microsoft Saved Console.<br>Ne gère que le LOCAL. Sur un poste en domaine, les comptes utilisateurs se gèrent côté serveur dans l'Active Directory.<br>Linux : tout passe par la CLI, useradd, usermod, passwd."},
 
  {cat:"Comptes / services", color:"rose", name:"Services (demons système)",
-  need:"Gérer les services / demons du système (demarrer, arreter, état), y compris ceux a l'arret.",
+  need:"Quel PANNEAU permet de gérer les services / demons du système (demarrer, arreter, état), y compris ceux a l'arret ?",
   win:["services.msc"], winShow:"services.msc", img:"services",
   linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
   tip:"La console qui liste les services de Windows et permet d'agir dessus : démarrer, arrêter, redémarrer, et surtout régler le type de démarrage (Automatique, Manuel, Désactivé).<br>Un service est un programme qui tourne en arrière-plan sans session utilisateur ouverte (le spouleur d'impression, le client DNS, le pare-feu).<br>Montre AUSSI les services à l'arrêt, contrairement au Gestionnaire des tâches qui n'affiche que ce qui tourne.<br>Linux : systemctl list-units --type=service, avec --all pour inclure ceux qui sont arrêtés."},
@@ -361,11 +361,11 @@ const DATA = [
   linux:{none:true},
   tip:"Le client qui ouvre une session graphique complète sur une machine distante, comme si on était assis devant.<br>mstsc = Microsoft Terminal Services Client. Protocole RDP = Remote Desktop Protocol, port 3389 (à bien retenir).<br>Ouvre une NOUVELLE session et VERROUILLE l'écran local : l'utilisateur devant le poste ne voit rien de ce que tu fais.<br>C'est toute la différence avec msra (Assistance à distance) qui partage la session en cours.<br>Linux : xfreerdp ou rdesktop."},
 
- {cat:"Réseau", color:"jaune", name:"Tester un service sur un port (telnet)", en:"telnet",
+ {cat:"Réseau", color:"jaune", name:"Tester un service sur un port", en:"Test Network Connection",
   need:"Vérifier qu'un service TCP répond sur un port précis (POP3 = 110, SMTP = 25, HTTP = 80).",
-  win:["telnet <ip> <port>","telnet ip port","telnet 192.168.20.250 110","telnet"], winShow:"telnet <ip> <port>",
-  linux:{acc:["telnet <ip> <port>","nc -zv <ip> <port>","nc <ip> <port>","telnet"], show:"telnet <ip> <port>   ou   nc -zv <ip> <port>"},
-  tip:"Vérifie qu'un service TCP répond bien sur un port précis : on ouvre une connexion brute et on regarde si ça décroche.<br>telnet = teletype network, le vieux protocole de terminal distant, détourné ici en testeur de port. Ports courants : SMTP 25, POP3 110, HTTP 80, IMAP 143, HTTPS 443, RDP 3389.<br>Séparateur ESPACE sous Windows, jamais deux-points : telnet 192.168.20.250 110, pas ...250:110.<br>Client désactivé par défaut sous Windows (à activer dans les fonctionnalités). Équivalent PowerShell moderne : Test-NetConnection -Port 110.<br>Linux : telnet ou nc -zv (netcat, -z = scan sans envoyer de données, -v = verbose)."},
+  win:["test-netconnection","test-netconnection <ip> -port <port>","test netconnection","tnc","tnc <ip> -port <port>","test-netconnection 192.168.1.1 -port 443","telnet <ip> <port>","telnet ip port","telnet 192.168.20.250 110","telnet"], winShow:"Test-NetConnection <ip> -Port <port>",
+  linux:{acc:["nc -zv <ip> <port>","nc <ip> <port>","nc -zv","nc","telnet <ip> <port>","telnet"], show:"nc -zv <ip> <port>   (ou  telnet <ip> <port>)"},
+  tip:"Vérifie qu'un service TCP répond bien sur un port précis, sur une machine DISTANTE : on frappe à la porte et on regarde si elle s'ouvre.<br>Réponse en clair : TcpTestSucceeded True (ça répond) ou False (ça ne répond pas). Alias court : tnc. Exemple : Test-NetConnection 192.168.1.1 -Port 443.<br>Ports courants : SMTP 25, POP3 110, HTTP 80, IMAP 143, HTTPS 443, RDP 3389.<br>Un False ne prouve pas que le service est tombé : un pare-feu en route suffit à faire échouer le test. Se croise avec netstat -anob, qui montre lui ce qui écoute sur SA propre machine.<br>Ancêtre : telnet &lt;ip&gt; &lt;port&gt; (teletype network), désactivé par défaut sous Windows et sans aucun retour visible ; il sert encore à DIALOGUER avec un service, pas seulement à le tester. Linux : nc -zv &lt;ip&gt; &lt;port&gt; (netcat, -z = scan sans données, -v = verbose)."},
 
  {cat:"Réseau", color:"vert", name:"Connecter un lecteur réseau", en:"Map network drive",
   need:"Depuis Ce PC, mapper un partage réseau à une lettre de lecteur (Z:, P:...) via le menu graphique. Quel est ce menu ?",
@@ -495,7 +495,9 @@ function render(){
   if(idx>=pool.length){
     el("qcat").firstChild.textContent="Tour termine ";
     el("qdot").style.background="transparent";
-    el("need").innerHTML=`Score du tour : <b>${correct}/${done}</b>.` + (missed.length?` ${missed.length} a refaire (bouton "Refaire les ratees").`:" Sans faute !");
+    el("need").innerHTML = (!missed.length && done===DATA.length)
+      ? `<b>SANS FAUTE ! ${correct}/${done}</b><br>Tout le deck, d'un trait. Bravo.`
+      : `Score du tour : <b>${correct}/${done}</b>.` + (missed.length?` ${missed.length} a refaire (bouton "Refaire les ratees").`:" Sans faute !");
     el("linuxField").style.display="none";
     el("win").style.display="none";
     el("qimg").style.display="none";

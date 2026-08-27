@@ -66,6 +66,7 @@
       <option value="text">Besoin (texte)</option>
       <option value="full">Image + titre</option>
       <option value="mask">Image masquée</option>
+      <option value="fr">Nom du panneau (FR)</option>
     </select>
     <select id="cat"></select>
     <button id="btnReset">Mélanger</button>
@@ -80,7 +81,7 @@
     <div class="need" id="need">...</div>
 
     <div class="field">
-      <label>Windows</label>
+      <label id="winLabel">Windows</label>
       <input id="win" autocomplete="off" spellcheck="false" placeholder="ta commande Windows">
     </div>
     <div class="field" id="linuxField">
@@ -124,7 +125,7 @@ const DATA = [
   tip:"Interroge le serveur DNS pour obtenir l'IP qui se cache derrière un nom.<br>nslookup = name server lookup. DNS = Domain Name System.<br>Teste le résolveur de noms, PAS la connectivité : un nslookup qui répond ne prouve pas que la machine est joignable. À distinguer du ping.<br>Linux : nslookup, dig ou host."},
 
  {cat:"Réseau", color:"rose", name:"Config IP complète", en:"IP configuration",
-  need:"Afficher toute ta config réseau en détail : IP, passerelle, DNS, MAC.",
+  need:"Afficher toute la config réseau en détail : IP, passerelle, DNS, MAC.",
   win:["ipconfig /all","ipconfig/all"], winShow:"ipconfig /all",
   linux:{acc:["ip addr","ip a","ip address","ip addr; ip route; resolvectl status","ip addr ; ip route ; resolvectl status","ip addr; ip route","ip addr ; ip route","ip a && ip route","ip a; ip route"], show:"ip addr  ;  ip route  ;  resolvectl status"},
   tip:"Affiche toute la configuration réseau de la machine : IP, masque, passerelle, serveurs DNS, adresse MAC, bail DHCP.<br>ipconfig = IP configuration. /all sort le détail complet ; ipconfig seul ne donne que l'essentiel.<br>Côté Linux c'est recomposé : ip addr (interfaces et IP), ip route (passerelle), resolvectl status (DNS).<br>ip addr seul suffit pour valider ici."},
@@ -264,7 +265,7 @@ const DATA = [
   tip:"Le moniteur temps réel de la machine : processus en cours, consommation CPU, RAM, disque et réseau, applications au démarrage, utilisateurs connectés.<br>taskmgr = task manager. Raccourci direct : Ctrl + Maj + Échap.<br>Bien plus large que services.msc : ici on voit l'usage des RESSOURCES, pas seulement les services.<br>Le réflexe quand une machine rame : trier par CPU ou par mémoire pour trouver le coupable.<br>Linux : htop (ou top)."},
 
  {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'événements", en:"Event Viewer",
-  need:"Voir pourquoi la machine a planté, ou tracer une erreur / une connexion (qui, quand).",
+  need:"Retrouver l'erreur EXACTE d'un plantage, ou tracer qui s'est connecté et quand, dans les journaux détaillés.",
   win:["eventvwr.msc"], winShow:"eventvwr.msc", img:"observateur_d_evenements",
   linux:{acc:["journalctl","journalctl -p err -b","journalctl -b","journalctl -xe"], show:"journalctl -p err -b"},
   tip:"La console qui centralise tous les journaux de Windows : Système, Application, Sécurité, plus les journaux des services. C'est là qu'on cherche POURQUOI la machine a planté, ou qu'on trace une erreur et une connexion (qui, quand).<br>eventvwr.msc = event viewer, .msc = Microsoft Saved Console.<br>Chaque entrée porte un niveau (Critique, Erreur, Avertissement, Information) et un Event ID qui identifie le type d'événement.<br>Onglet Sécurité : Event ID 4624 = connexion réussie, 4625 = échec de connexion. Clé pour l'audit.<br>Linux : journalctl, et journalctl -p err -b pour ne voir que les erreurs du démarrage courant."},
@@ -295,7 +296,7 @@ const DATA = [
   tip:"La console graphique de gestion des comptes et groupes locaux : créer un utilisateur, changer un mot de passe, désactiver un compte, ajouter quelqu'un au groupe Administrateurs.<br>lusrmgr.msc = local users manager, .msc = Microsoft Saved Console.<br>Ne gère que le LOCAL. Sur un poste en domaine, les comptes utilisateurs se gèrent côté serveur dans l'Active Directory.<br>Linux : tout passe par la CLI, useradd, usermod, passwd."},
 
  {cat:"Comptes / services", color:"rose", name:"Services (demons système)",
-  need:"Quel PANNEAU permet de gérer les services / demons du système (demarrer, arreter, état), y compris ceux a l'arret ?",
+  need:"Quel PANNEAU liste les programmes qui tournent en arrière-plan et règle leur type de démarrage, y compris ceux a l'arret ?",
   win:["services.msc"], winShow:"services.msc", img:"services",
   linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
   tip:"La console qui liste les services de Windows et permet d'agir dessus : démarrer, arrêter, redémarrer, et surtout régler le type de démarrage (Automatique, Manuel, Désactivé).<br>Un service est un programme qui tourne en arrière-plan sans session utilisateur ouverte (le spouleur d'impression, le client DNS, le pare-feu).<br>Montre AUSSI les services à l'arrêt, contrairement au Gestionnaire des tâches qui n'affiche que ce qui tourne.<br>Linux : systemctl list-units --type=service, avec --all pour inclure ceux qui sont arrêtés."},
@@ -332,19 +333,19 @@ const DATA = [
   tip:"Vérifie l'intégrité du système de fichiers et de la surface du disque, et répare les erreurs trouvées.<br>chkdsk = check disk. /f = fix (corrige les erreurs du système de fichiers), /r = recover (cherche les secteurs défectueux et récupère ce qui est lisible, beaucoup plus long).<br>Sur le disque système, il ne peut pas travailler à chaud : il propose de s'exécuter au prochain redémarrage.<br>Linux : fsck (file system check), qui lui exige un démontage manuel de la partition, là où chkdsk le gère seul."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Nettoyage de disque", en:"clean manager",
-  need:"Lancer le nettoyage de disque (fichiers temporaires, corbeille...).",
+  need:"Libérer de l'espace en supprimant les fichiers inutiles : temporaires, corbeille, miniatures, anciennes installations.",
   win:["cleanmgr"], winShow:"cleanmgr", img:"nettoyage_de_disque",
   linux:{none:true},
   tip:"L'assistant qui libère de l'espace en supprimant les fichiers inutiles : fichiers temporaires, corbeille, miniatures, rapports d'erreurs, anciennes installations de Windows.<br>cleanmgr = clean manager.<br>Le bouton Nettoyer les fichiers système relance l'outil en administrateur et débloque les gros morceaux, dont le dossier Windows.old qui peut peser plusieurs dizaines de Go après une mise à niveau.<br>À distinguer de l'Assistant Stockage (ms-settings:storagesense) qui fait la même chose automatiquement et en continu."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Options d'alimentation", en:"Power Configuration",
-  need:"Ouvrir les options d'alimentation (mode d'alimentation, mise en veille, comportement du bouton marche).",
+  need:"Régler la mise en veille, le comportement du bouton marche et la fermeture du capot.",
   win:["powercfg.cpl"], winShow:"powercfg.cpl", img:"options_d_alimentation",
   linux:{none:true},
   tip:"Le panneau qui règle le comportement énergétique de la machine : mode d'alimentation, mise en veille de l'écran et du disque, action du bouton marche et de la fermeture du capot.<br>powercfg.cpl = power configuration, .cpl = Control Panel appLet (applet = petite application).<br>C'est ici qu'on désactive le démarrage rapide, coupable classique de postes qui redémarrent mal ou qui gardent un état incohérent.<br>Il existe aussi powercfg en ligne de commande, notamment powercfg /batteryreport et powercfg /energy.<br>Linux : powertop, tlp."},
 
  {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (règles avancées)", en:"Windows Firewall",
-  need:"Ouvrir le pare-feu avec règles de trafic entrant / sortant.",
+  need:"Créer une règle qui autorise ou bloque un port précis, en entrant comme en sortant.",
   win:["wf.msc"], winShow:"wf.msc", img:"pare_feu_windows_defender",
   linux:{none:true},
   tip:"La console avancée du pare-feu : on y crée et modifie les règles de trafic ENTRANT et SORTANT, port par port, programme par programme, profil par profil.<br>wf.msc = Windows Firewall, .msc = Microsoft Saved Console.<br>Les règles s'appliquent par profil réseau (Domaine, Privé, Public) : une même machine peut donc se comporter différemment selon le réseau où elle est branchée.<br>Par défaut Windows bloque l'entrant non sollicité et autorise le sortant.<br>Linux : ufw (simple), iptables ou nftables (fin)."},
@@ -380,7 +381,7 @@ const DATA = [
   tip:"Le panneau moderne qui montre la répartition de l'espace disque PAR CATÉGORIES (applications, fichiers temporaires, documents, autres) et qui gère l'Assistant Stockage.<br>L'Assistant Stockage (Storage Sense) fait le ménage automatiquement : vidage périodique de la corbeille et des fichiers temporaires.<br>Répond à la question ce qui MANGE l'espace, à ne pas confondre avec Gestion des disques (diskmgmt.msc) qui gère partitions et volumes, ni avec Get-Volume qui donne juste les chiffres.<br>Chemin : Paramètres > Système > Stockage.<br>Linux : du -h ou ncdu pour la même logique par dossier."},
 
  {cat:"Diagnostic / process", color:"vert", name:"Moniteur de fiabilité", en:"Reliability Monitor",
-  need:"Voir l'historique chronologique des pannes et l'indice de stabilité du poste sur les dernières semaines.",
+  need:"Voir sur une FRISE si le poste s'est dégradé ces dernières semaines, et quel changement coïncide avec les plantages.",
   win:["perfmon /rel","perfmon/rel"], winShow:"perfmon /rel", img:"moniteur_de_fiabilite",
   linux:{none:true},
   tip:"Affiche l'historique chronologique des pannes du poste sur les dernières semaines, sous forme de frise, avec un indice de stabilité noté de 1 à 10.<br>perfmon = performance monitor, /rel = reliability (fiabilité).<br>Regroupe les échecs d'applications, les échecs Windows, les avertissements et les installations : on voit tout de suite si les plantages ont commencé le jour d'une mise à jour ou d'un nouveau pilote.<br>À distinguer du Moniteur de performance (perfmon seul) qui montre les compteurs en TEMPS RÉEL (CPU, RAM, disque). Ici l'historique des plantages, là les mesures live.<br>Le plus lisible des outils de diagnostic pour un utilisateur non technique."},
@@ -420,8 +421,37 @@ const DATA = [
 const IMG_DIR = "images/";
 const imgFull = q => q.img ? IMG_DIR + q.img + ".png" : null;
 const imgMask = q => q.img ? IMG_DIR + q.img + "_masquee.png" : null;
+// Mode « Nom du panneau (FR) » : seuls les VRAIS panneaux graphiques, ceux qui
+// ont un nom francais affiche par Windows. Pas les commandes pures, pas les
+// menus contextuels.
+const PANELS = [
+  "Connexions réseau (cartes)",
+  "Paramètres réseau (profil Public/Privé)",
+  "Gestion des disques",
+  "Informations système (panneau)",
+  "Propriétés système",
+  "Gestionnaire de périphériques",
+  "A propos de Windows (version)",
+  "Gestionnaire des tâches",
+  "Observateur d'événements",
+  "Utilisateurs et groupes locaux",
+  "Services (demons système)",
+  "Nettoyage de disque",
+  "Options d'alimentation",
+  "Pare-feu Windows Defender (règles avancées)",
+  "Programmes et fonctionnalités (désinstaller)",
+  "Connexion Bureau a distance",
+  "Paramètres de stockage",
+  "Moniteur de fiabilité",
+  "Assistance à distance Windows",
+  "Restauration du système",
+  "Paramètres (Windows)"
+];
+const isPanel = q => PANELS.indexOf(q.name) >= 0;
+
 const norm = s => (s||"").toLowerCase()
   .normalize("NFD").replace(/[\u0300-\u036f]/g,"")  // enlève les accents
+  .replace(/[\u2019\u02bc]/g,"'")                    // apostrophe typographique -> droite
   .replace(/\s+/g," ").trim();
 // Tokenise une commande en mots-clés significatifs : on retire les
 // séparateurs d'enchaînement (; && | puis , /) et la ponctuation de
@@ -463,6 +493,9 @@ function matchAny(input, variants){
 const dotColor = c => c==="jaune"?"var(--jaune)":c==="rose"?"var(--rose)":"var(--vert)";
 
 let pool=[], idx=0, correct=0, done=0, missed=[], answered=false;
+// isFullRun : le tour porte sur tout le pool du mode (pas un rattrapage).
+// Seul un sans-faute sur un tour complet declenche le message de bravo.
+let isFullRun=true;
 const el = id => document.getElementById(id);
 const linuxOn = () => el("linToggle").checked;
 
@@ -472,9 +505,10 @@ function buildCatSelect(){
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-function loadPool(list){
+function loadPool(list, full){
   pool=shuffle(list.slice());
   idx=0; correct=0; done=0; missed=[];
+  isFullRun = (full !== false);
   render();
 }
 function currentList(){
@@ -482,6 +516,7 @@ function currentList(){
   let list = c==="Toutes"?DATA:DATA.filter(d=>d.cat===c);
   const mode=el("mode").value;
   if(mode==="full"||mode==="mask") list=list.filter(d=>d.img);
+  if(mode==="fr") list=list.filter(isPanel);
   return list;
 }
 
@@ -495,8 +530,8 @@ function render(){
   if(idx>=pool.length){
     el("qcat").firstChild.textContent="Tour termine ";
     el("qdot").style.background="transparent";
-    el("need").innerHTML = (!missed.length && done===DATA.length)
-      ? `<b>SANS FAUTE ! ${correct}/${done}</b><br>Tout le deck, d'un trait. Bravo.`
+    el("need").innerHTML = (!missed.length && isFullRun && done>1)
+      ? `<b>SANS FAUTE ! ${correct}/${done}</b><br>Tout le paquet, d'un trait. Bravo.`
       : `Score du tour : <b>${correct}/${done}</b>.` + (missed.length?` ${missed.length} a refaire (bouton "Refaire les ratees").`:" Sans faute !");
     el("linuxField").style.display="none";
     el("win").style.display="none";
@@ -517,14 +552,21 @@ function render(){
   } else {
     qimg.innerHTML=""; qimg.style.display="none";
   }
-  if(mode==="text"){
+  if(mode==="text"||mode==="fr"){
     el("need").textContent=q.need;
   } else {
     el("need").textContent = mode==="mask"
       ? "Quel panneau ? Retrouve son nom (a la correction) et tape la commande."
       : "Quelle commande ouvre ce panneau ?";
   }
-  if(!linuxOn()){
+  if(mode==="fr"){
+    el("winLabel").textContent="Nom en francais";
+    el("win").placeholder="le nom de l'outil, en francais";
+  } else {
+    el("winLabel").textContent="Windows";
+    el("win").placeholder="ta commande Windows";
+  }
+  if(!linuxOn() || mode==="fr"){
     el("linuxField").style.display="none";
   }else if(q.linux && q.linux.none){
     el("linuxField").style.display="block";
@@ -538,12 +580,56 @@ function render(){
 }
 function updateScore(){el("score").textContent=`${correct} / ${done}`;}
 
+// Variantes acceptees pour le nom francais : le nom complet, le nom sans
+// sa parenthese, et le contenu de la parenthese seul.
+// Mode FR : on compare des NOMS francais, pas des commandes. On tolere donc
+// tout ce qui ne change pas le sens : accents, apostrophes, traits d'union,
+// singulier/pluriel, et les petits mots de liaison (de, des, la, les...).
+const FR_STOP = ["de","des","du","d","la","le","les","l","un","une","et","a","au","aux","en"];
+function frCanon(s){
+  return norm(s)
+    .replace(/['\u2019\u2010-\u2015-]/g," ")   // apostrophes et traits d'union -> espace
+    .replace(/[()]/g," ")
+    .replace(/[^a-z0-9 ]/g," ")
+    .split(/\s+/)
+    .filter(w => w && FR_STOP.indexOf(w) < 0)
+    .map(w => w.length > 3 ? w.replace(/[sx]$/,"") : w)  // singulier = pluriel
+    .join(" ")
+    .trim();
+}
+// Variantes acceptees : le nom complet, le nom sans sa parenthese, et le
+// contenu de la parenthese seul.
+// Quelques panneaux ont un raccourci courant sans ambiguite sous Windows.
+const FR_EXTRA = {
+  "Pare-feu Windows Defender (règles avancées)":
+    ["pare-feu","pare-feu windows","windows firewall","pare-feu windows defender"],
+  // Windows nomme l'un « Assistance a distance Windows » et l'autre
+  // « Connexion Bureau a distance » : le mot Windows est donc optionnel.
+  "Assistance à distance Windows":
+    ["assistance à distance"],
+  "Connexion Bureau a distance":
+    ["connexion bureau à distance windows","bureau à distance","bureau à distance windows"]
+};
+function frAccept(q){
+  const acc=[q.name].concat(FR_EXTRA[q.name]||[]);
+  const m=q.name.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+  if(m){ acc.push(m[1]); acc.push(m[2]); }
+  return acc;
+}
+function frMatch(input, q){
+  const c = frCanon(input);
+  if(!c) return false;
+  return frAccept(q).some(a => frCanon(a) === c);
+}
+
 function check(){
   if(answered) return;
   const q=pool[idx];
-  const winOk = matchAny(el("win").value, q.win);
+  const frMode = el("mode").value==="fr";
+  const winOk = frMode ? frMatch(el("win").value, q)
+                       : matchAny(el("win").value, q.win);
   let linOk=true;
-  const linActive = q.linux && !q.linux.none && linuxOn();
+  const linActive = !frMode && q.linux && !q.linux.none && linuxOn();
   if(linActive){
     linOk = matchAny(el("lin").value, q.linux.acc);
   }
@@ -562,9 +648,13 @@ function reveal(){
   showReveal(q,'reveal');
   updateScore();
 }
+// Les commandes contiennent des chevrons (<ip>, <port>, <service>...) que le
+// navigateur prendrait pour des balises : on les echappe avant affichage.
+const escHtml = t => (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function showReveal(q, mode){
-  const lin = (q.linux&&q.linux.none)?`<span class="none">aucun (panneau graphique)</span>`:`<code>${q.linux.show}</code>`;
-  const linLine = linuxOn()?`<div>Linux : ${lin}</div>`:"";
+  const lin = (q.linux&&q.linux.none)?`<span class="none">aucun (panneau graphique)</span>`:`<code>${escHtml(q.linux.show)}</code>`;
+  const frMode = el("mode").value==="fr";
+  const linLine = (linuxOn() && !frMode)?`<div>Linux : ${lin}</div>`:"";
   const en = q.en?`<span class="en">${q.en}</span>`:"";
   const head = mode==='ok'?"Juste.":mode==='reveal'?"Reponse :":"Attendu :";
   // image complete (avec titre) a la correction, sauf si elle est deja affichee en question
@@ -573,7 +663,7 @@ function showReveal(q, mode){
   el("reveal").innerHTML =
     `<div><b>${head}</b></div>
      <div class="name">${q.name}${en}</div>
-     <div>Windows : <code>${q.winShow}</code></div>
+     <div>${frMode?"Se lance par":"Windows :"} <code>${escHtml(q.winShow)}</code></div>
      ${linLine}` +
     (q.tip?`<div class="tip">${q.tip}</div>`:"") + rimg;
   el("reveal").className="reveal show";
@@ -618,7 +708,7 @@ window.closeLightbox=function(){
   el("lightboxImg").src="";
 };
 el("lightbox").onclick=window.closeLightbox;
-el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice()); };
+el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice(), false); };
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && el("lightbox").classList.contains("show")){ window.closeLightbox(); return; }
   if(e.key==="Enter"){ if(answered) next(); else check(); }

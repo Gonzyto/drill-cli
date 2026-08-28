@@ -3,719 +3,1823 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drill CLI - Windows / Linux</title>
+<title>OSI Drill</title>
 <style>
   :root{
-    --bg:#0f1115; --card:#171a21; --line:#2a2f3a; --txt:#e6e9ef; --muted:#9aa3b2;
-    --ok:#3fb950; --ko:#f85149; --accent:#58a6ff;
-    --jaune:#ffe600; --rose:#ff2d95; --vert:#00e676;
+    --bg:#12141b; --panel:#191d27; --panel2:#212634; --line:#2b3243;
+    --txt:#e7eaf1; --muted:#8b93a7; --muted2:#636b7e;
+    --c7:#b98cff; --c6:#7aa2ff; --c5:#4fd0e0; --c4:#5fd39a;
+    --c3:#f0c463; --c2:#f0925a; --c1:#ef6a6a; --atk:#ff5d7a;
+    --good:#3ecf8e; --bad:#ff6b6b;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
-  .wrap{max-width:720px;margin:0 auto;padding:24px 18px 60px}
-  h1{font-size:20px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
-  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
-  select,button{font:inherit;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
-  button:hover{border-color:var(--accent)}
-  button.primary{background:var(--accent);color:#0b0d11;border-color:var(--accent);font-weight:600}
-  .lintoggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
-  .lintoggle input{cursor:pointer;width:15px;height:15px}
-  .score{margin-left:auto;color:var(--muted);font-size:13px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
-  .cat{display:inline-block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-  .dot{display:inline-block;width:11px;height:11px;margin-left:6px;vertical-align:middle}
-  .dot.jaune{border-radius:50%}
-  .dot.rose{border-radius:2px}
-  .dot.vert{width:0;height:0;background:transparent!important;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:11px solid var(--vert)}
-  .need{font-size:17px;margin:0 0 18px}
-  .field{margin-bottom:12px}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-  input{width:100%;font:inherit;background:#0f1319;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:ui-monospace,Consolas,monospace}
-  input:focus{outline:none;border-color:var(--accent)}
-  input.ok{border-color:var(--ok);background:#122015}
-  input.ko{border-color:var(--ko);background:#20120f}
-  input:disabled{opacity:.5}
-  .actions{display:flex;gap:8px;margin-top:16px}
-  .reveal{margin-top:16px;padding:14px;border-radius:10px;background:#0f1319;border:1px solid var(--line);font-size:14px;display:none}
-  .reveal.show{display:block}
-  .reveal code{font-family:ui-monospace,Consolas,monospace;color:var(--accent)}
-  .reveal .name{font-size:16px;font-weight:600;margin:4px 0 12px}
-  .reveal .en{font-weight:400;font-size:12px;color:var(--muted);font-style:italic;margin-left:8px}
-  .reveal .tip{color:var(--muted);margin-top:10px;font-size:13px}
-  .none{color:var(--muted);font-style:italic}
-  .legend{font-size:12px;color:var(--muted);margin-top:22px;display:flex;gap:16px;flex-wrap:wrap}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .qimg{margin:0 0 16px;text-align:center;display:none}
-  .qimg img{max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:8px}
-  .reveal .rimg{margin-top:12px;text-align:center}
-  .reveal .rimg img{max-width:100%;max-height:280px;border:1px solid var(--line);border-radius:8px}
-  .qimg img,.reveal .rimg img{cursor:zoom-in}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:24px 16px 48px;}
+  .wrap{width:100%; max-width:760px}
+  header.top{display:flex; align-items:baseline; gap:12px; margin-bottom:8px}
+  .logo{font-family:var(--mono); font-weight:700; letter-spacing:.5px; font-size:20px}
+  .logo b{color:var(--c4)}
+  .sub{color:var(--muted); font-size:13px}
+  .intro{font-size:12.5px; color:var(--muted); line-height:1.55; margin:6px 0 18px; max-width:660px}
+
+  .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px}
+  select{background:var(--panel); color:var(--txt); border:1px solid var(--line); border-radius:8px;
+    padding:9px 12px; font-family:inherit; font-size:13.5px; cursor:pointer}
+  select:focus{outline:2px solid var(--c4); outline-offset:1px}
+  .ctlbtn{background:var(--panel); color:var(--txt); border:1px solid var(--line); border-radius:8px;
+    padding:9px 13px; font-family:inherit; font-size:13.5px; cursor:pointer}
+  .ctlbtn:hover{border-color:var(--c4)}
+  .ctlbtn:disabled{opacity:.4; cursor:not-allowed}
+  .score{margin-left:auto; font-family:var(--mono); font-size:14px; color:var(--muted)}
+  .score b{color:var(--txt)}
+  .tlsline{margin-bottom:14px; min-height:20px}
+  .tlsbox{display:inline-flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); cursor:pointer; user-select:none}
+  .tlsbox input{width:15px; height:15px; accent-color:var(--c5); cursor:pointer}
+  .tlsbox .lockhint{color:var(--muted2); font-size:12px}
+
+  .track{height:4px; background:var(--panel); border-radius:4px; overflow:hidden; margin-bottom:20px}
+  .track .fill{height:100%; background:var(--c4); width:0; transition:width .25s}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    border-top:4px solid var(--lc,var(--line)); padding:26px 24px; min-height:210px}
+  .ask{font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:var(--muted); margin-bottom:16px}
+  .qmain{font-size:15px; line-height:1.55}
+  .proto-big{font-family:var(--mono); font-size:30px; font-weight:700; color:var(--lc); line-height:1.1}
+  .proto-full{font-family:var(--mono); font-size:15px; color:var(--muted); margin-top:6px}
+  .cbadge{display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700;
+    color:var(--lc); border:1px solid var(--lc); border-radius:6px; padding:3px 8px; margin-top:14px}
+  .qrole{font-size:18px; line-height:1.5; color:var(--txt)}
+  .qrole .ports{font-family:var(--mono); color:var(--lc); font-weight:700}
+  .tlschip{font-family:var(--mono); font-size:10px; font-weight:700; color:#0e1116; background:var(--c5);
+    border-radius:4px; padding:1px 6px; vertical-align:middle; margin-left:8px}
+
+  .answer{margin-top:20px}
+  textarea{width:100%; resize:vertical; min-height:60px; background:var(--bg); color:var(--txt);
+    border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-family:inherit; font-size:14.5px; line-height:1.5}
+  textarea:focus{outline:2px solid var(--c4); outline-offset:1px; border-color:transparent}
+  .hint{font-size:12px; color:var(--muted2); margin-top:8px}
+  kbd{font-family:var(--mono); font-size:11px; background:var(--panel2); border:1px solid var(--line);
+    border-radius:4px; padding:1px 5px; color:var(--muted)}
+  .validate{margin-top:16px; width:100%; cursor:pointer; font-family:inherit; font-weight:700;
+    font-size:14.5px; color:var(--txt); background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px}
+  .validate:hover{border-color:var(--c4)}
+  .dunno{margin-top:9px; width:100%; cursor:pointer; font-family:inherit; font-size:13px; color:var(--muted);
+    background:none; border:1px dashed var(--line); border-radius:10px; padding:10px}
+  .dunno:hover{color:var(--txt); border-color:var(--muted)}
+  .hintline{margin-top:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+  .hintbtn{cursor:pointer; background:none; border:0; color:var(--muted); font-family:inherit; font-size:12.5px; text-decoration:underline dotted; padding:0}
+  .hintbtn:hover{color:var(--txt)}
+  .hintbtn:disabled{color:var(--muted2); text-decoration:none; cursor:default}
+  .hintout{font-family:var(--mono); font-size:12.5px; color:var(--c4)}
+
+  .reveal{animation:pop .22s ease}
+  @keyframes pop{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+  .verdict{display:inline-block; font-weight:700; font-size:11.5px; letter-spacing:1px; text-transform:uppercase;
+    padding:5px 11px; border-radius:6px; margin-bottom:12px}
+  .verdict.ok{color:var(--good); background:rgba(62,207,142,.12); border:1px solid rgba(62,207,142,.45)}
+  .verdict.ko{color:var(--bad); background:rgba(255,107,107,.1); border:1px solid rgba(255,107,107,.45)}
+  .atk-tag{display:inline-block; font-family:var(--mono); font-size:10.5px; font-weight:700; letter-spacing:.5px;
+    color:#fff; background:var(--atk); border-radius:5px; padding:2px 7px; margin-left:10px; vertical-align:middle}
+  .qrecap{background:var(--bg); border:1px dashed var(--line); border-radius:10px; padding:11px 14px; margin-bottom:10px}
+  .qrecap .lbl{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted2); margin-bottom:5px}
+  .qrecap .val{font-size:14px; line-height:1.5; color:var(--muted)}
+  .qrecap .val b{color:var(--txt); font-family:var(--mono)}
+  .yourans{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:11px 14px; margin:6px 0 6px}
+  .yourans .lbl{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted2); margin-bottom:5px}
+  .yourans .val{font-size:14px; color:var(--txt); white-space:pre-wrap; word-break:break-word}
+  .yourans .val.empty{color:var(--muted2); font-style:italic}
+  .answer-hero{background:rgba(255,255,255,.04); border:1px solid var(--lc); border-radius:12px; padding:16px 18px; margin:16px 0 6px; position:relative}
+  .answer-hero .rtag{position:absolute; top:-9px; left:14px; font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:1px; color:#0e1116; background:var(--lc); border-radius:5px; padding:2px 8px}
+  .answer-hero .proto-big{margin-top:4px}
+  .hero-role{font-size:17px; line-height:1.55; color:var(--txt)}
+  .hero-ports{font-family:var(--mono); font-size:24px; font-weight:700; color:var(--lc); line-height:1.2}
+  .hero-meta{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin-top:10px}
+  .rrow{margin:14px 0}
+  .rlbl{font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted2); margin-bottom:5px}
+  .rval{font-size:14px; line-height:1.55; color:var(--muted)}
+  .rval.ports{font-family:var(--mono); color:var(--c4)}
+  ul.facts{margin:5px 0 0; padding-left:18px}
+  ul.facts li{font-size:13.5px; line-height:1.5; color:var(--muted); margin-bottom:3px}
+  .tip{background:var(--panel2); border-left:3px solid var(--lc); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:16px; font-size:13.5px; line-height:1.55; color:var(--txt)}
+  .tip .tl{font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--lc); font-weight:700; margin-bottom:5px}
+  .judge{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:22px}
+  .judge.one{grid-template-columns:1fr}
+  .jb{cursor:pointer; font-family:inherit; font-weight:700; font-size:14.5px; border-radius:10px; padding:13px; border:1px solid; transition:transform .1s}
+  .jb:hover{transform:translateY(-1px)}
+  .jb.g{color:var(--good); background:rgba(62,207,142,.1); border-color:rgba(62,207,142,.45)}
+  .jb.b{color:var(--bad); background:rgba(255,107,107,.09); border-color:rgba(255,107,107,.4)}
+  .jb.next{color:var(--txt); background:var(--panel2); border-color:var(--line)}
+  .jb.next:hover{border-color:var(--c4)}
+  .empty{text-align:center; color:var(--muted); padding:40px 20px; font-size:14px; line-height:1.6}
+
+  @media (max-width:560px){ .judge{grid-template-columns:1fr} .proto-big{font-size:26px} .score{margin-left:0; width:100%} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+
+  .rimgs{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+  .rimgs img{max-width:220px; max-height:150px; border-radius:8px; border:1px solid var(--line); cursor:zoom-in; background:#fff}
   .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px;cursor:zoom-out}
   .lightbox.show{display:flex}
-  .lightbox img{max-width:95vw;max-height:95vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+  .lightbox-inner{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:95vw}
+  .lightbox img{max-width:95vw;max-height:88vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#fff}
+  .lightbox-cap{color:var(--txt);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px 16px;max-width:640px}
+  .lightbox-cap .lbt{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--txt);margin-bottom:5px}
+  .lightbox-cap .lbe{font-size:13px;line-height:1.5;color:var(--muted)}
 </style>
 </head>
 <body>
+<div class="lightbox" id="lightbox"><div class="lightbox-inner"><img id="lightboxImg" src="" alt=""><div class="lightbox-cap" id="lightboxCap"></div></div></div>
 <div class="wrap">
-  <h1>Drill CLI - Windows / Linux</h1>
-  <div class="sub">On part du besoin, tu retrouves l'outil. À la correction, le nom en clair (FR) et son acronyme (EN) s'affichent. Modes image : panneau avec titre (retrouver la commande) ou masqué (retrouver nom + commande). Score de session (remis à zéro si tu fermes l'onglet).</div>
+  <header class="top"><div class="logo">OSI<b>·</b>drill</div><div class="sub">révision protocoles réseau</div></header>
+  <div class="intro">On choisit un mode et un périmètre. Tu tapes ta réponse, tu valides avec <kbd>Ctrl</kbd>+<kbd>Entrée</kbd> (ou « Je ne sais pas »). Pour le rôle c'est toi qui juges ; pour le protocole et les ports, la correction est automatique et tolérante. « Mélanger » relance un tirage, « Refaire les ratées » rejoue tes erreurs.</div>
 
-  <div class="bar">
-    <select id="mode">
-      <option value="text">Besoin (texte)</option>
-      <option value="full">Image + titre</option>
-      <option value="mask">Image masquée</option>
-      <option value="fr">Nom du panneau (FR)</option>
+  <div class="controls">
+    <select id="modeSel">
+      <option value="role">Trouver le rôle</option>
+      <option value="proto">Trouver le protocole</option>
+      <option value="port">Trouver le port</option>
+      <option value="protobyport">Le protocole par le port</option>
     </select>
-    <select id="cat"></select>
-    <button id="btnReset">Mélanger</button>
-    <button id="btnMissed">Refaire les ratées</button>
-    <label class="lintoggle"><input type="checkbox" id="linToggle">Équivalent Linux</label>
-    <div class="score" id="score">0 / 0</div>
+    <select id="scopeSel">
+      <option value="all">Toutes les couches</option>
+      <option value="7">Couche 7 - Application</option>
+      <option value="6">Couche 6 - Présentation</option>
+      <option value="5">Couche 5 - Session</option>
+      <option value="4">Couche 4 - Transport</option>
+      <option value="3">Couche 3 - Réseau</option>
+      <option value="2">Couche 2 - Liaison</option>
+      <option value="1">Couche 1 - Physique</option>
+      <option value="attaques">Attaques (C2-C3)</option>
+    </select>
+    <button class="ctlbtn" id="shuffleBtn">Mélanger</button>
+    <button class="ctlbtn" id="replayBtn" disabled>Refaire les ratées</button>
+    <span class="score"><b id="scoreGood">0</b> / <span id="scoreSeen">0</span></span>
   </div>
-
-  <div class="card">
-    <div class="cat" id="qcat">categorie<span class="dot" id="qdot"></span></div>
-    <div class="qimg" id="qimg"></div>
-    <div class="need" id="need">...</div>
-
-    <div class="field">
-      <label id="winLabel">Windows</label>
-      <input id="win" autocomplete="off" spellcheck="false" placeholder="ta commande Windows">
-    </div>
-    <div class="field" id="linuxField">
-      <label>Linux</label>
-      <input id="lin" autocomplete="off" spellcheck="false" placeholder="ta commande Linux">
-    </div>
-
-    <div class="actions">
-      <button class="primary" id="btnCheck">Vérifier</button>
-      <button id="btnReveal">Révéler</button>
-      <button id="btnNext">Suivant</button>
-    </div>
-
-    <div class="reveal" id="reveal"></div>
+  <div class="tlsline" id="tlsWrap">
+    <label class="tlsbox"><input type="checkbox" id="tlsToggle"> avec TLS <span class="lockhint">(ajoute les ports chiffrés : 443, 993, 995, 465...)</span></label>
   </div>
-
-  <div class="legend">
-    <span><span class="dot jaune" style="background:var(--jaune)"></span>rond jaune : paire quasi 1-pour-1</span>
-    <span><span class="dot rose" style="background:var(--rose)"></span>carré rose : équivalence recomposée</span>
-    <span><span class="dot vert"></span>triangle vert : pas d'équivalent CLI (panneau)</span>
-  </div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div id="cardHost"></div>
 </div>
 
-<div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt=""></div>
-
 <script>
-// ---- Banque, tiree du socle de Benjamin (fiches du 4 aout) ----
-// color: 'jaune' | 'rose' | 'vert'   name: titre FR en clair   en: acronyme anglais (optionnel)
-// linux: {none:true} si aucun equivalent CLI
-const DATA = [
- {cat:"Réseau", color:"jaune", name:"Connexions réseau (actives / en écoute)", en:"network statistics",
-  need:"Voir toutes les connexions actives et en écoute, avec le port, le PID et le process qui tient chaque connexion.",
-  win:["netstat -anob","netstat -anbo","netstat -aob","netstat -abno","netstat -ano"], winShow:"netstat -anob",
-  linux:{acc:["ss -tunlp","ss -tulnp","ss -tnulp","ss -plunt"], show:"ss -tunlp"},
-  tip:"Liste toutes les connexions TCP/UDP de la machine : qui parle avec qui, sur quel port, et quel process tient la connexion.<br>netstat = network statistics. -a = all (toutes, y compris en écoute), -n = numeric (IP et ports en chiffres, pas de résolution DNS), -o = owner (affiche le PID), -b = binary (nom de l'exécutable, exige l'admin).<br>0.0.0.0 en LISTENING = le service écoute sur toutes les interfaces.<br>Pilier de l'investigation : on croise le PID avec le Gestionnaire des tâches ou tasklist.<br>Linux : ss -tunlp (socket statistics)."},
-
- {cat:"Réseau", color:"jaune", name:"Interroger le DNS (nom -> IP)", en:"name server lookup",
-  need:"Interroger le DNS pour obtenir l'IP derrière un nom (sans tester la machine).",
-  win:["nslookup","nslookup wikipedia.fr"], winShow:"nslookup <nom>",
-  linux:{acc:["nslookup","dig","host"], show:"nslookup <nom> (ou dig / host)"},
-  tip:"Interroge le serveur DNS pour obtenir l'IP qui se cache derrière un nom.<br>nslookup = name server lookup. DNS = Domain Name System.<br>Teste le résolveur de noms, PAS la connectivité : un nslookup qui répond ne prouve pas que la machine est joignable. À distinguer du ping.<br>Linux : nslookup, dig ou host."},
-
- {cat:"Réseau", color:"rose", name:"Config IP complète", en:"IP configuration",
-  need:"Afficher toute la config réseau en détail : IP, passerelle, DNS, MAC.",
-  win:["ipconfig /all","ipconfig/all"], winShow:"ipconfig /all",
-  linux:{acc:["ip addr","ip a","ip address","ip addr; ip route; resolvectl status","ip addr ; ip route ; resolvectl status","ip addr; ip route","ip addr ; ip route","ip a && ip route","ip a; ip route"], show:"ip addr  ;  ip route  ;  resolvectl status"},
-  tip:"Affiche toute la configuration réseau de la machine : IP, masque, passerelle, serveurs DNS, adresse MAC, bail DHCP.<br>ipconfig = IP configuration. /all sort le détail complet ; ipconfig seul ne donne que l'essentiel.<br>Côté Linux c'est recomposé : ip addr (interfaces et IP), ip route (passerelle), resolvectl status (DNS).<br>ip addr seul suffit pour valider ici."},
-
- {cat:"Réseau", color:"jaune", name:"Afficher le cache ARP", en:"Address Resolution Protocol",
-  need:"Afficher le cache des correspondances IP vers MAC des machines déjà contactées sur le réseau local.",
-  win:["arp -a","arp"], winShow:"arp -a",
-  linux:{acc:["ip neigh","ip neighbour","ip n","arp -a","arp"], show:"ip neigh   (ou  arp -a)"},
-  tip:"Le cache ARP associe une IP à sa MAC pour les machines contactées récemment sur le réseau local (ARP = Address Resolution Protocol : broadcast « qui a cette IP ? », la réponse remplit la MAC).<br>C'est un CACHE, temporaire : il se remplit tout seul et s'oublie au bout de quelques minutes ou au reboot.<br>À distinguer de la table MAC du switch (MAC ↔ port physique) : malgré son nom de « table », elle se comporte aussi comme un cache (apprise seule, expire ~5 min, perdue au reboot).<br>La seule vraiment stable des trois, c'est la table de routage.<br>Options : -a = all (tout le cache), -d = delete (vider une entrée ou tout), -s = static (ajouter une entrée manuelle).<br>ip neigh est la version moderne côté Linux ; pour vider : arp -d ou ip neigh flush all."},
-
- {cat:"Réseau", color:"rose", name:"Vider le cache DNS", en:"flush DNS",
-  need:"Vider le cache DNS local de la machine.",
-  win:["ipconfig /flushdns","ipconfig/flushdns"], winShow:"ipconfig /flushdns",
-  linux:{acc:["resolvectl flush-caches","sudo resolvectl flush-caches","systemd-resolve --flush-caches","sudo systemd-resolve --flush-caches"], show:"resolvectl flush-caches"},
-  tip:"Efface le cache DNS local : la machine oubliera les correspondances nom vers IP qu'elle avait mémorisées et réinterrogera le serveur.<br>Réflexe quand un site a changé d'IP ou qu'un enregistrement DNS vient d'être modifié et que le poste voit encore l'ancienne adresse.<br>Même famille que /displaydns qui, lui, AFFICHE le cache au lieu de le vider.<br>Linux : resolvectl flush-caches."},
-
- {cat:"Réseau", color:"jaune", name:"Afficher le cache DNS", en:"display DNS",
-  need:"Afficher le contenu du cache DNS local (ce que la machine a déjà résolu).",
-  win:["ipconfig /displaydns","ipconfig/displaydns"], winShow:"ipconfig /displaydns",
-  linux:{acc:["resolvectl status","resolvectl","systemd-resolve --status"], show:"resolvectl status"},
-  tip:"Affiche le contenu du cache DNS local : la liste des noms que la machine a déjà résolus et qu'elle garde en mémoire.<br>Utile pour vérifier qu'un poste a bien mémorisé une mauvaise IP avant de vider le cache avec /flushdns.<br>Pas d'équivalent strict côté Linux : resolvectl status montre la config DNS active par interface, pas la liste des noms en cache."},
-
- {cat:"Réseau", color:"jaune", name:"Renouveler le bail DHCP", en:"release / renew",
-  need:"Larguer l'adresse IP obtenue en DHCP, puis en redemander une neuve au serveur.",
-  win:["ipconfig /release puis ipconfig /renew","ipconfig /release; ipconfig /renew","ipconfig /release ; ipconfig /renew","ipconfig /release && ipconfig /renew","ipconfig /release","ipconfig/release","ipconfig /renew","ipconfig/renew"], winShow:"ipconfig /release   puis   ipconfig /renew",
-  linux:{acc:["sudo dhclient -r; sudo dhclient","sudo dhclient -r ; sudo dhclient","dhclient -r; dhclient","dhclient -r ; dhclient","sudo dhclient -r && sudo dhclient","dhclient -r","sudo dhclient -r","dhclient","sudo dhclient"], show:"sudo dhclient -r   puis   sudo dhclient"},
-  tip:"Largue l'adresse IP obtenue automatiquement, puis en redemande une neuve au serveur.<br>DHCP = Dynamic Host Configuration Protocol : le serveur qui distribue les IP sur le réseau, sous forme de bail à durée limitée.<br>Deux temps : /release largue le bail, /renew en redemande un.<br>Réflexe quand la machine se retrouve en 169.254.x.x (APIPA = Automatic Private IP Addressing : elle n'a joint aucun serveur DHCP et s'est auto-attribué une adresse).<br>Linux moderne géré par NetworkManager : nmcli con down puis up."},
-
- {cat:"Réseau", color:"jaune", name:"Tester la connectivité", en:"ping",
-  need:"Tester si une machine distante répond (envoi ICMP echo request).",
-  win:["ping","ping 8.8.8.8"], winShow:"ping <hote>",
-  linux:{acc:["ping","ping 8.8.8.8"], show:"ping <hote>"},
-  tip:"Teste si une machine distante répond, en lui envoyant un petit paquet auquel elle doit répondre.<br>ICMP = Internet Control Message Protocol : on envoie un echo request, la machine renvoie un echo reply.<br>Couche 3, sans handshake ni état de connexion (contrairement à TCP).<br>Attention : un ping sans réponse ne veut pas toujours dire machine éteinte, un pare-feu peut bloquer l'ICMP."},
-
- {cat:"Réseau", color:"jaune", name:"Itinéraire / chemin emprunté", en:"trace route",
-  need:"Afficher le chemin (chaque routeur traversé) emprunté pour atteindre un hôte.",
-  win:["tracert","tracert 8.8.8.8"], winShow:"tracert <hote>",
-  linux:{acc:["traceroute","tracepath"], show:"traceroute <hote>"},
-  tip:"Affiche le chemin complet emprunté pour atteindre un hôte : chaque routeur traversé, avec le temps de réponse.<br>tracert = trace route. Chaque ligne = un saut (un routeur) sur le trajet.<br>Sert à localiser OÙ ça casse : si les 3 premiers sauts répondent et que le reste tombe, le problème est en aval de chez toi.<br>Linux : traceroute ou tracepath."},
-
- {cat:"Réseau", color:"rose", name:"Table de routage",
-  need:"Afficher la table de routage de la machine (par ou sort le trafic).",
-  win:["route print"], winShow:"route print",
-  linux:{acc:["ip route","ip r","netstat -rn"], show:"ip route"},
-  tip:"Affiche la table de routage de la machine : par quelle interface et quelle passerelle sort chaque destination.<br>Route par défaut = destination 0.0.0.0, masque /0 (attrape-tout), passerelle = IP du routeur : c'est par là que part tout ce qui n'est pas local.<br>Ne pas confondre destination (où on va) et passerelle (par qui on passe).<br>Contrairement au cache ARP, la table de routage est stable et configurée, pas apprise toute seule.<br>Linux : ip route."},
-
- {cat:"Réseau", color:"jaune", name:"Lister les lecteurs réseau", en:"net use",
-  need:"Lister les lecteurs réseau actuellement montés sur la machine.",
-  win:["net use"], winShow:"net use",
-  linux:{acc:["mount | grep cifs","mount grep cifs","mount | grep -i cifs"], show:"mount | grep cifs"},
-  tip:"Liste les lecteurs réseau actuellement montés sur la machine, avec leur lettre et le chemin UNC correspondant.<br>net use seul, sans argument, affiche la liste. UNC = Universal Naming Convention : la notation \\\\serveur\\partage.<br>Erreur 67 (nom réseau introuvable) = le partage n'existe pas ou le chemin est faux.<br>Linux : on filtre la sortie de mount sur cifs (le protocole de partage Windows, aussi appelé SMB)."},
-
- {cat:"Réseau", color:"jaune", name:"Monter un partage distant", en:"map / mount share",
-  need:"Monter un partage distant sur une lettre de lecteur (commande complète, avec chemin).",
-  win:["net use z: \\\\serveur\\partage","net use \\\\serveur\\partage","net use z:","net use p: \\\\serveur\\partage"], winShow:"net use Z: \\\\serveur\\partage",
-  linux:{acc:["sudo mount -t cifs //serveur/partage /mnt/point","mount -t cifs //serveur/partage /mnt/point","sudo mount -t cifs","mount -t cifs"], show:"sudo mount -t cifs //serveur/partage /mnt/point"},
-  tip:"Monte un partage distant sur une lettre de lecteur, en une seule commande.<br>La vraie paire commande à commande entre les deux mondes.<br>Windows : net use + lettre + chemin UNC (double antislash). Option fréquente : /user:domaine\\login pour les identifiants.<br>Linux : -t cifs indique le type de système de fichiers (CIFS = Common Internet File System, l'autre nom de SMB), //serveur/partage est la source en slashs simples, /mnt/point le dossier local qui doit déjà exister."},
-
- {cat:"Réseau", color:"vert", name:"Connexions réseau (cartes)", en:"Network Connections",
-  need:"Agir sur une interface : IP statique, DNS manuel, activer / désactiver.",
-  win:["ncpa.cpl"], winShow:"ncpa.cpl", img:"connexions_reseaux",
-  linux:{none:true},
-  tip:"Le panneau qui liste les cartes réseau de la machine et permet d'AGIR dessus : poser une IP statique, forcer un DNS manuel, activer ou désactiver une interface, renommer une carte.<br>ncpa.cpl = Network Connections Provider Application, .cpl = Control Panel appLet (applet = petite application, un module du Panneau de configuration).<br>Console d'ACTION, à ne pas confondre avec ipconfig ou ip addr qui ne font que LIRE la configuration.<br>C'est ici qu'on passe en IPv4 > Propriétés pour basculer entre DHCP et adressage manuel.<br>Équivalent CLI Linux : ip link set (activer/désactiver), ip addr add/del (poser une IP)."},
-
- {cat:"Réseau", color:"vert", name:"Paramètres réseau (profil Public/Privé)",
-  need:"Basculer le profil réseau entre Public et Privé.",
-  win:["ms-settings:network"], winShow:"ms-settings:network", img:"reseau_et_internet",
-  linux:{none:true},
-  tip:"Le panneau moderne qui gère le profil du réseau auquel la machine est connectée, et permet de basculer entre Public et Privé.<br>Enjeu concret : le pare-feu applique des règles différentes selon le profil. En Public il ferme la découverte réseau et le partage de fichiers, en Privé il les autorise.<br>Symptôme classique : un poste qui ne voit plus les partages du réseau local parce qu'il est passé en Public.<br>Chemin : Paramètres > Réseau et Internet."},
-
- // --- Systeme / materiel ---
- {cat:"Système / matériel", color:"jaune", name:"Gestion des disques", en:"Disk Management",
-  need:"Gérer les disques et partitions (créer, formater, assigner une lettre).",
-  win:["diskmgmt.msc"], winShow:"diskmgmt.msc", img:"gestion_des_disques",
-  linux:{acc:["lsblk"], show:"lsblk (+ fdisk / parted pour agir)"},
-  tip:"La console qui gère les disques et les partitions : créer, supprimer, formater, étendre un volume, assigner ou changer une lettre de lecteur.<br>diskmgmt.msc : .msc = Microsoft Saved Console, le format des consoles d'administration MMC.<br>C'est ici qu'on récupère un disque neuf qui n'apparaît pas dans l'explorateur : il faut l'initialiser et créer un volume.<br>À ne pas confondre avec Paramètres de stockage qui montre seulement ce qui MANGE l'espace.<br>Linux : lsblk liste les blocs, l'action se fait avec fdisk ou parted."},
-
- {cat:"Système / matériel", color:"rose", name:"Infos machine (ligne de commande)", en:"system info",
-  need:"Consulter les infos de la machine en ligne de commande (OS, version, uptime, matériel de base).",
-  win:["systeminfo"], winShow:"systeminfo",
-  linux:{acc:["uname -a","lsb_release -a","uname -a cat /etc/os-release uptime lshw -short","uname -a cat /etc/os-release uptime","uname -a lshw -short"], show:"uname -a  ;  cat /etc/os-release  ;  uptime  ;  lshw -short"},
-  tip:"Sort en une commande la carte d'identité de la machine : nom, domaine, version de Windows, date d'installation, uptime, RAM, processeur, correctifs installés.<br>Pratique en dépannage à distance ou en script, quand on n'a pas d'interface graphique.<br>Recomposé côté Linux : uname -a donne l'OS et le noyau, cat /etc/os-release la distribution, uptime la durée de fonctionnement, lshw -short le matériel.<br>uname -a seul suffit pour valider ici."},
-
- {cat:"Système / matériel", color:"jaune", name:"Lister le contenu d'un dossier", en:"directory",
-  need:"Afficher la liste des fichiers et dossiers du répertoire courant.",
-  win:["dir","dir /a","dir /s"], winShow:"dir",
-  linux:{acc:["ls","ls -l","ls -la","ls -al","ls -a"], show:"ls   (souvent  ls -l  ou  ls -la)"},
-  tip:"Affiche la liste des fichiers et dossiers du répertoire courant, avec leur taille et leur date, plus l'espace libre du disque en bas.<br>dir = directory. Options utiles : /a = all (inclut les fichiers cachés), /s = subdirectories (récursif dans les sous-dossiers).<br>Linux : ls (list), souvent en ls -l (format long et détaillé) ou ls -la (avec les fichiers cachés, ceux qui commencent par un point)."},
-
- {cat:"Système / matériel", color:"rose", name:"Espace disque", en:"disk free",
-  need:"Afficher l'espace libre et utilisé des disques / partitions.",
-  win:["get-volume","getvolume","get volume"], winShow:"Get-Volume",
-  linux:{acc:["df -h","df"], show:"df -h"},
-  tip:"Affiche l'espace libre et l'espace total de chaque volume monté.<br>Get-Volume est la commande PowerShell moderne : une ligne par volume, avec la lettre, le système de fichiers, la taille et le restant.<br>Get-PSDrive donne la même info sous un autre angle (les lecteurs vus par PowerShell).<br>Réflexe numéro 1 quand une machine rame ou plante : un disque plein.<br>Linux : df -h. df = disk free, -h = human-readable (Go et Mo au lieu d'octets bruts). Ne pas confondre avec du = disk usage (poids d'un dossier précis), lsblk (structure des disques) ou free -h (la RAM, pas le disque)."},
-
- {cat:"Système / matériel", color:"rose", name:"Informations système (panneau)", en:"Microsoft System Information",
-  need:"Afficher le panneau graphique qui sort les infos complètes de la machine (matériel, composants).",
-  win:["msinfo32"], winShow:"msinfo32", img:"informations_systeme",
-  linux:{acc:["lscpu","lscpu lsblk free -h lshw -short","lscpu lsblk free -h","lshw -short"], show:"lscpu  ;  lsblk  ;  free -h  ;  lshw -short"},
-  tip:"Le panneau graphique qui sort la fiche technique complète de la machine : matériel, composants, environnement logiciel, pilotes chargés, conflits de ressources.<br>msinfo32 = Microsoft System Information.<br>Panneau de CONSULTATION uniquement, on ne modifie rien, à l'inverse de sysdm.cpl qui agit.<br>Linux : lscpu (CPU), lsblk (disques), free -h (RAM) et lshw -short (vue matériel complète) se complètent. lscpu seul suffit pour valider."},
-
- {cat:"Système / matériel", color:"vert", name:"Propriétés système", en:"System Properties",
-  need:"Renommer le PC ou le joindre a un domaine.",
-  win:["sysdm.cpl"], winShow:"sysdm.cpl", img:"proprietes_systeme",
-  linux:{none:true},
-  tip:"Le panneau qui donne l'identité de la machine sur le réseau et ses réglages système : renommer le PC, le joindre à un domaine ou à un groupe de travail, activer le Bureau à distance, régler les performances et la protection du système.<br>sysdm.cpl = System Device Manager, .cpl = Control Panel appLet (applet = petite application) : historiquement le module Système du Panneau de configuration.<br>Console d'ACTION, à l'inverse de msinfo32 où on ne fait que consulter.<br>C'est ici que se trouve l'onglet Protection du système qui active les points de restauration utilisés par rstrui."},
-
- {cat:"Système / matériel", color:"rose", name:"Gestionnaire de périphériques", en:"Device Management",
-  need:"Voir le matériel détecté et l'état des pilotes (périphérique inconnu, pilote manquant).",
-  win:["devmgmt.msc"], winShow:"devmgmt.msc", img:"gestionnaire_de_peripheriques",
-  linux:{acc:["lshw -short","sudo lshw -short","lspci","lsusb"], show:"lshw -short"},
-  tip:"La console qui liste tout le matériel détecté par Windows et l'état de ses pilotes : mettre à jour, désinstaller, désactiver un périphérique, voir les conflits.<br>devmgmt.msc = Device Management, .msc = Microsoft Saved Console.<br>Les deux symptômes à repérer : le point d'exclamation jaune (pilote absent ou en erreur) et la catégorie Autres périphériques (matériel détecté mais non reconnu).<br>Agit poste par poste ; pour déployer des pilotes en masse par script, voir pnputil.<br>Linux : lshw -short (vue d'ensemble), lspci (cartes internes), lsusb (périphériques USB)."},
-
- {cat:"Système / matériel", color:"rose", name:"A propos de Windows (version)", en:"Windows Version",
-  need:"Afficher la version exacte de Windows installée.",
-  win:["winver"], winShow:"winver", img:"a_propos_de_windows",
-  linux:{acc:["cat /etc/os-release","lsb_release -a"], show:"lsb_release -a  (ou /etc/os-release)"},
-  tip:"Ouvre la petite fenêtre À propos qui donne la version et le numéro de build exacts de Windows installé.<br>winver = Windows version.<br>Le premier réflexe avant d'appliquer un correctif ou de vérifier qu'une mise à jour de fonctionnalité est bien passée.<br>Linux : lsb_release -a ou cat /etc/os-release."},
-
- // --- Diagnostic / process ---
- {cat:"Diagnostic / process", color:"jaune", name:"Liste des processus", en:"task list",
-  need:"Lister les processus en cours d'exécution.",
-  win:["tasklist"], winShow:"tasklist",
-  linux:{acc:["ps aux","ps -aux","ps -ef"], show:"ps aux"},
-  tip:"Liste tous les processus en cours d'exécution, avec leur nom, leur PID et la mémoire consommée.<br>tasklist = task list. PID = Process IDentifier, le numéro unique attribué à chaque processus.<br>La version ligne de commande du Gestionnaire des tâches : utilisable à distance, en script, ou quand l'interface graphique est bloquée.<br>Se croise avec netstat -anob pour relier un PID à une connexion réseau, et avec taskkill pour tuer le processus trouvé.<br>Linux : ps aux (process status)."},
-
- {cat:"Diagnostic / process", color:"jaune", name:"Terminer un processus", en:"task kill",
-  need:"Tuer un processus a partir de son PID.",
-  win:["taskkill /pid","taskkill /pid 1234","taskkill /pid 1234 /f"], winShow:"taskkill /PID <n> /F",
-  linux:{acc:["kill","kill 1234","kill -9 1234"], show:"kill <PID>"},
-  tip:"Tue un processus à partir de son PID (ou de son nom avec /IM).<br>taskkill = task kill. /PID désigne le processus, /F = force (termine de force un process qui ne répond plus).<br>Enchaînement type : tasklist pour trouver le PID, puis taskkill /PID <n> /F.<br>Linux : kill &lt;PID&gt;, et kill -9 &lt;PID&gt; pour l'équivalent du /F."},
-
- {cat:"Diagnostic / process", color:"jaune", name:"Gestionnaire des tâches", en:"Task Manager",
-  need:"Ouvrir un moniteur temps réel des process ET des ressources (CPU, RAM, disque, réseau).",
-  win:["taskmgr"], winShow:"taskmgr", img:"gestionnaire_des_taches",
-  linux:{acc:["htop","top"], show:"htop"},
-  tip:"Le moniteur temps réel de la machine : processus en cours, consommation CPU, RAM, disque et réseau, applications au démarrage, utilisateurs connectés.<br>taskmgr = task manager. Raccourci direct : Ctrl + Maj + Échap.<br>Bien plus large que services.msc : ici on voit l'usage des RESSOURCES, pas seulement les services.<br>Le réflexe quand une machine rame : trier par CPU ou par mémoire pour trouver le coupable.<br>Linux : htop (ou top)."},
-
- {cat:"Diagnostic / process", color:"jaune", name:"Observateur d'événements", en:"Event Viewer",
-  need:"Retrouver l'erreur EXACTE d'un plantage, ou tracer qui s'est connecté et quand, dans les journaux détaillés.",
-  win:["eventvwr.msc"], winShow:"eventvwr.msc", img:"observateur_d_evenements",
-  linux:{acc:["journalctl","journalctl -p err -b","journalctl -b","journalctl -xe"], show:"journalctl -p err -b"},
-  tip:"La console qui centralise tous les journaux de Windows : Système, Application, Sécurité, plus les journaux des services. C'est là qu'on cherche POURQUOI la machine a planté, ou qu'on trace une erreur et une connexion (qui, quand).<br>eventvwr.msc = event viewer, .msc = Microsoft Saved Console.<br>Chaque entrée porte un niveau (Critique, Erreur, Avertissement, Information) et un Event ID qui identifie le type d'événement.<br>Onglet Sécurité : Event ID 4624 = connexion réussie, 4625 = échec de connexion. Clé pour l'audit.<br>Linux : journalctl, et journalctl -p err -b pour ne voir que les erreurs du démarrage courant."},
-
- {cat:"Diagnostic / process", color:"jaune", name:"Filtrer une sortie (grep de Windows)", en:"find string",
-  need:"Filtrer une sortie de commande sur un motif (l'équivalent de grep sous Windows).",
-  win:["findstr","findstr /i"], winShow:"findstr /I <motif>",
-  linux:{acc:["grep","grep -i"], show:"grep <motif>"},
-  tip:"Filtre une sortie de commande pour n'afficher que les lignes contenant un motif : l'équivalent Windows de grep.<br>findstr = find string. /I = ignore case (insensible à la casse), /S pour chercher récursivement dans les sous-dossiers.<br>S'utilise derrière un pipe : ipconfig /all | findstr /I dns.<br>Linux : grep &lt;motif&gt;, et grep -i pour l'insensibilité à la casse."},
-
- // --- Comptes / services ---
- {cat:"Comptes / services", color:"jaune", name:"Utilisateur courant et groupes", en:"who am I",
-  need:"Afficher l'utilisateur courant et ses groupes.",
-  win:["whoami /groups","whoami/groups"], winShow:"whoami /groups",
-  linux:{acc:["id","groups"], show:"id  (ou groups)"},
-  tip:"Affiche sous quel compte on est réellement connecté et à quels groupes ce compte appartient.<br>whoami = who am I. /groups liste les groupes, dont l'appartenance à Administrateurs.<br>Le réflexe avant de crier au bug de permissions : on vérifie d'abord qui on est. Utile aussi après une ouverture de session sur un poste de domaine.<br>Linux : id (ou groups)."},
-
- {cat:"Comptes / services", color:"jaune", name:"Comptes locaux",
-  need:"Lister les comptes utilisateurs locaux, sous forme de commande.",
-  win:["net user"], winShow:"net user",
-  linux:{acc:["cat /etc/passwd","getent passwd"], show:"cat /etc/passwd  (ou getent passwd)"},
-  tip:"Liste les comptes utilisateurs locaux de la machine, en ligne de commande.<br>Comptes LOCAUX seulement, stockés sur le poste : les comptes du domaine ne sont pas là, ils vivent dans l'Active Directory.<br>Consultation. Pour créer un compte, en pratique on ne tape pas net user /add, on passe par lusrmgr.msc (carte dédiée).<br>Linux : cat /etc/passwd ou getent passwd."},
-
- {cat:"Comptes / services", color:"vert", name:"Utilisateurs et groupes locaux", en:"Local Users Manager",
-  need:"Ouvrir la console de gestion des comptes et groupes locaux.",
-  win:["lusrmgr.msc"], winShow:"lusrmgr.msc", img:"utilisateurs_et_groupes_locaux",
-  linux:{none:true},
-  tip:"La console graphique de gestion des comptes et groupes locaux : créer un utilisateur, changer un mot de passe, désactiver un compte, ajouter quelqu'un au groupe Administrateurs.<br>lusrmgr.msc = local users manager, .msc = Microsoft Saved Console.<br>Ne gère que le LOCAL. Sur un poste en domaine, les comptes utilisateurs se gèrent côté serveur dans l'Active Directory.<br>Linux : tout passe par la CLI, useradd, usermod, passwd."},
-
- {cat:"Comptes / services", color:"rose", name:"Services (demons système)",
-  need:"Quel PANNEAU liste les programmes qui tournent en arrière-plan et règle leur type de démarrage, y compris ceux a l'arret ?",
-  win:["services.msc"], winShow:"services.msc", img:"services",
-  linux:{acc:["systemctl list-units --type=service","systemctl","systemctl list-units --type=service --all","systemctl list-unit-files --type=service","systemctl status"], show:"systemctl list-units --type=service"},
-  tip:"La console qui liste les services de Windows et permet d'agir dessus : démarrer, arrêter, redémarrer, et surtout régler le type de démarrage (Automatique, Manuel, Désactivé).<br>Un service est un programme qui tourne en arrière-plan sans session utilisateur ouverte (le spouleur d'impression, le client DNS, le pare-feu).<br>Montre AUSSI les services à l'arrêt, contrairement au Gestionnaire des tâches qui n'affiche que ce qui tourne.<br>Linux : systemctl list-units --type=service, avec --all pour inclure ceux qui sont arrêtés."},
-
- {cat:"Comptes / services", color:"jaune", name:"État d'un service (ligne de commande)", en:"service control query",
-  need:"Vérifier vite fait si un service tourne ou est arrêté, sans ouvrir la console graphique.",
-  win:["sc.exe query","sc.exe query <service>","sc.exe query spooler","sc query","sc query <service>","sc query spooler","sc query wuauserv","get-service","get service","get-service <service>","get service <service>","get-service spooler","getservice"], winShow:"sc.exe query <service>   (ou  Get-Service <service>)",
-  linux:{acc:["systemctl status","systemctl status <service>","systemctl is-active","systemctl is-active <service>"], show:"systemctl status <service>"},
-  tip:"Vérifie en une commande si un service tourne ou est arrêté, sans ouvrir la console graphique.<br>sc = service control. query interroge l'état, qc (query config) donne en plus le type de démarrage (AUTO / MANUAL / DISABLED).<br>État renvoyé : 4 RUNNING ou 1 STOPPED.<br>Équivalent natif PowerShell : Get-Service &lt;service&gt;. Nuance : sc.exe query seul ne liste que les services actifs, Get-Service liste tout, actifs et arrêtés ; en revanche Get-Service ne donne pas le type de démarrage, il faut sc.exe qc pour ça.<br>Piège PowerShell : sc y est un alias de Set-Content, donc sc query écrit un fichier nommé query au lieu d'interroger le service. On tape sc.exe query.<br>Linux : systemctl status &lt;service&gt;."},
-
- // --- Maintenance / admin ---
- {cat:"Maintenance / admin", color:"rose", name:"Verificateur des fichiers système", en:"System File Checker",
-  need:"Vérifier et réparer les fichiers système corrompus de Windows.",
-  win:["sfc /scannow","sfc/scannow"], winShow:"sfc /scannow",
-  linux:{acc:["apt install --reinstall","sudo apt install --reinstall"], show:"apt install --reinstall <paquet>"},
-  tip:"Analyse tous les fichiers système protégés de Windows et remplace automatiquement ceux qui sont corrompus par une copie saine.<br>sfc = System File Checker. /scannow lance l'analyse et la réparation immédiates.<br>À lancer dans une invite EN ADMINISTRATEUR, sinon il refuse. Compter plusieurs minutes.<br>Si sfc échoue, l'étape suivante est DISM /Online /Cleanup-Image /RestoreHealth qui répare la source dans laquelle sfc va puiser.<br>Linux : pas de scan automatique équivalent, il faut connaître le paquet fautif et faire apt install --reinstall &lt;paquet&gt;."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Mettre a jour les stratégies de groupe", en:"Group Policy Update",
-  need:"Forcer l'application immédiate des stratégies de groupe (GPO).",
-  win:["gpupdate /force","gpupdate/force"], winShow:"gpupdate /force",
-  linux:{none:true},
-  tip:"Force l'application immédiate des stratégies de groupe, sans attendre le rafraîchissement automatique (toutes les 90 minutes environ).<br>gpupdate = Group Policy Update. GPO = Group Policy Object : une règle poussée depuis l'Active Directory sur les postes et les utilisateurs.<br>/force réapplique TOUTES les stratégies, pas seulement celles qui ont changé.<br>gpupdate FORCE l'application, gpresult MONTRE ce qui a été appliqué : les deux font la paire.<br>Spécifique à l'univers Active Directory, pas d'équivalent Linux direct."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Stratégies réellement appliquées", en:"Group Policy Result",
-  need:"Vérifier quelles stratégies de groupe se sont réellement appliquées au poste et à l'utilisateur.",
-  win:["gpresult /r","gpresult/r","gpresult /r /scope computer","gpresult /scope:user /r"], winShow:"gpresult /r",
-  linux:{none:true},
-  tip:"Affiche quelles stratégies de groupe se sont RÉELLEMENT appliquées au poste et à l'utilisateur, et lesquelles ont été filtrées.<br>gpresult = Group Policy Result. /r = report (le rapport résumé en console). /h rapport.html génère un rapport complet et lisible.<br>Le diagnostic Active Directory par excellence : lecteur réseau, imprimante ou politique qui ne s'applique pas.<br>gpupdate FORCE l'application, gpresult MONTRE ce qui a été appliqué.<br>Notion Active Directory, pas d'équivalent Linux direct."},
-
- {cat:"Maintenance / admin", color:"rose", name:"Verifier la sante du disque", en:"check disk",
-  need:"Vérifier et réparer un disque (secteurs, système de fichiers).",
-  win:["chkdsk"], winShow:"chkdsk",
-  linux:{acc:["fsck"], show:"fsck"},
-  tip:"Vérifie l'intégrité du système de fichiers et de la surface du disque, et répare les erreurs trouvées.<br>chkdsk = check disk. /f = fix (corrige les erreurs du système de fichiers), /r = recover (cherche les secteurs défectueux et récupère ce qui est lisible, beaucoup plus long).<br>Sur le disque système, il ne peut pas travailler à chaud : il propose de s'exécuter au prochain redémarrage.<br>Linux : fsck (file system check), qui lui exige un démontage manuel de la partition, là où chkdsk le gère seul."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Nettoyage de disque", en:"clean manager",
-  need:"Libérer de l'espace en supprimant les fichiers inutiles : temporaires, corbeille, miniatures, anciennes installations.",
-  win:["cleanmgr"], winShow:"cleanmgr", img:"nettoyage_de_disque",
-  linux:{none:true},
-  tip:"L'assistant qui libère de l'espace en supprimant les fichiers inutiles : fichiers temporaires, corbeille, miniatures, rapports d'erreurs, anciennes installations de Windows.<br>cleanmgr = clean manager.<br>Le bouton Nettoyer les fichiers système relance l'outil en administrateur et débloque les gros morceaux, dont le dossier Windows.old qui peut peser plusieurs dizaines de Go après une mise à niveau.<br>À distinguer de l'Assistant Stockage (ms-settings:storagesense) qui fait la même chose automatiquement et en continu."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Options d'alimentation", en:"Power Configuration",
-  need:"Régler la mise en veille, le comportement du bouton marche et la fermeture du capot.",
-  win:["powercfg.cpl"], winShow:"powercfg.cpl", img:"options_d_alimentation",
-  linux:{none:true},
-  tip:"Le panneau qui règle le comportement énergétique de la machine : mode d'alimentation, mise en veille de l'écran et du disque, action du bouton marche et de la fermeture du capot.<br>powercfg.cpl = power configuration, .cpl = Control Panel appLet (applet = petite application).<br>C'est ici qu'on désactive le démarrage rapide, coupable classique de postes qui redémarrent mal ou qui gardent un état incohérent.<br>Il existe aussi powercfg en ligne de commande, notamment powercfg /batteryreport et powercfg /energy.<br>Linux : powertop, tlp."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Pare-feu Windows Defender (règles avancées)", en:"Windows Firewall",
-  need:"Créer une règle qui autorise ou bloque un port précis, en entrant comme en sortant.",
-  win:["wf.msc"], winShow:"wf.msc", img:"pare_feu_windows_defender",
-  linux:{none:true},
-  tip:"La console avancée du pare-feu : on y crée et modifie les règles de trafic ENTRANT et SORTANT, port par port, programme par programme, profil par profil.<br>wf.msc = Windows Firewall, .msc = Microsoft Saved Console.<br>Les règles s'appliquent par profil réseau (Domaine, Privé, Public) : une même machine peut donc se comporter différemment selon le réseau où elle est branchée.<br>Par défaut Windows bloque l'entrant non sollicité et autorise le sortant.<br>Linux : ufw (simple), iptables ou nftables (fin)."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Programmes et fonctionnalités (désinstaller)", en:"Application Wizard",
-  need:"Ouvrir l'ajout / suppression de programmes pour désinstaller ou modifier un logiciel.",
-  win:["appwiz.cpl"], winShow:"appwiz.cpl", img:"programmes_et_fonctionnalites",
-  linux:{none:true},
-  tip:"Le panneau qui liste tous les logiciels installés sur la machine et permet de les désinstaller, les modifier ou les réparer.<br>appwiz.cpl = application wizard, .cpl = Control Panel appLet (applet = petite application).<br>Donne aussi la date d'installation, l'éditeur, la version et le poids : utile pour repérer un logiciel indésirable arrivé récemment.<br>Le lien Activer ou désactiver des fonctionnalités Windows, dans la colonne de gauche, sert à ajouter des composants comme le client Telnet ou Hyper-V.<br>Linux : apt remove &lt;paquet&gt;."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Connexion Bureau a distance", en:"Microsoft Terminal Services Client",
-  need:"Se connecter graphiquement vers une autre machine EN OUVRANT UNE NOUVELLE SESSION : l'écran local se verrouille, l'utilisateur devant le poste ne voit rien.",
-  win:["mstsc"], winShow:"mstsc", img:"connexion_bureau_a_distance",
-  linux:{none:true},
-  tip:"Le client qui ouvre une session graphique complète sur une machine distante, comme si on était assis devant.<br>mstsc = Microsoft Terminal Services Client. Protocole RDP = Remote Desktop Protocol, port 3389 (à bien retenir).<br>Ouvre une NOUVELLE session et VERROUILLE l'écran local : l'utilisateur devant le poste ne voit rien de ce que tu fais.<br>C'est toute la différence avec msra (Assistance à distance) qui partage la session en cours.<br>Linux : xfreerdp ou rdesktop."},
-
- {cat:"Réseau", color:"jaune", name:"Tester un service sur un port", en:"Test Network Connection",
-  need:"Vérifier qu'un service TCP répond sur un port précis (POP3 = 110, SMTP = 25, HTTP = 80).",
-  win:["test-netconnection","test-netconnection <ip> -port <port>","test netconnection","tnc","tnc <ip> -port <port>","test-netconnection 192.168.1.1 -port 443","telnet <ip> <port>","telnet ip port","telnet 192.168.20.250 110","telnet"], winShow:"Test-NetConnection <ip> -Port <port>",
-  linux:{acc:["nc -zv <ip> <port>","nc <ip> <port>","nc -zv","nc","telnet <ip> <port>","telnet"], show:"nc -zv <ip> <port>   (ou  telnet <ip> <port>)"},
-  tip:"Vérifie qu'un service TCP répond bien sur un port précis, sur une machine DISTANTE : on frappe à la porte et on regarde si elle s'ouvre.<br>Réponse en clair : TcpTestSucceeded True (ça répond) ou False (ça ne répond pas). Alias court : tnc. Exemple : Test-NetConnection 192.168.1.1 -Port 443.<br>Ports courants : SMTP 25, POP3 110, HTTP 80, IMAP 143, HTTPS 443, RDP 3389.<br>Un False ne prouve pas que le service est tombé : un pare-feu en route suffit à faire échouer le test. Se croise avec netstat -anob, qui montre lui ce qui écoute sur SA propre machine.<br>Ancêtre : telnet &lt;ip&gt; &lt;port&gt; (teletype network), désactivé par défaut sous Windows et sans aucun retour visible ; il sert encore à DIALOGUER avec un service, pas seulement à le tester. Linux : nc -zv &lt;ip&gt; &lt;port&gt; (netcat, -z = scan sans données, -v = verbose)."},
-
- {cat:"Réseau", color:"vert", name:"Connecter un lecteur réseau", en:"Map network drive",
-  need:"Depuis Ce PC, mapper un partage réseau à une lettre de lecteur (Z:, P:...) via le menu graphique. Quel est ce menu ?",
-  win:["connecter un lecteur reseau","connecter lecteur reseau","clic droit","clicdroit","clic-droit","click droit","clic droit sur ce pc","clic droit proprietes"], winShow:"Clic droit sur Ce PC > Connecter un lecteur réseau", img:"connecter_lecteur_reseau",
-  linux:{none:true},
-  tip:"Le menu graphique qui mappe un partage réseau sur une lettre de lecteur (Z:, P:...), le geste du quotidien en entreprise.<br>Il n'y a pas de commande de lancement : on y accède par un CLIC DROIT sur Ce PC, le reste n'est que de la navigation dans le menu.<br>Souvent posé automatiquement par une GPO ou un script de login qui utilise net use en coulisse.<br>L'option Se reconnecter à l'ouverture de session rend le mappage persistant après redémarrage.<br>Pour la vraie commande, voir les cartes Lister les lecteurs réseau (net use) et Monter un partage distant (net use Z: \\\\serveur\\partage)."},
-
- {cat:"Système / matériel", color:"vert", name:"Paramètres de stockage", en:"Storage settings",
-  need:"Voir la répartition de l'espace disque par catégories (applications, fichiers temporaires...) et gérer l'Assistant Stockage.",
-  win:["ms-settings:storagesense"], winShow:"ms-settings:storagesense", img:"parametres_de_stockage",
-  linux:{none:true},
-  tip:"Le panneau moderne qui montre la répartition de l'espace disque PAR CATÉGORIES (applications, fichiers temporaires, documents, autres) et qui gère l'Assistant Stockage.<br>L'Assistant Stockage (Storage Sense) fait le ménage automatiquement : vidage périodique de la corbeille et des fichiers temporaires.<br>Répond à la question ce qui MANGE l'espace, à ne pas confondre avec Gestion des disques (diskmgmt.msc) qui gère partitions et volumes, ni avec Get-Volume qui donne juste les chiffres.<br>Chemin : Paramètres > Système > Stockage.<br>Linux : du -h ou ncdu pour la même logique par dossier."},
-
- {cat:"Diagnostic / process", color:"vert", name:"Moniteur de fiabilité", en:"Reliability Monitor",
-  need:"Voir sur une FRISE si le poste s'est dégradé ces dernières semaines, et quel changement coïncide avec les plantages.",
-  win:["perfmon /rel","perfmon/rel"], winShow:"perfmon /rel", img:"moniteur_de_fiabilite",
-  linux:{none:true},
-  tip:"Affiche l'historique chronologique des pannes du poste sur les dernières semaines, sous forme de frise, avec un indice de stabilité noté de 1 à 10.<br>perfmon = performance monitor, /rel = reliability (fiabilité).<br>Regroupe les échecs d'applications, les échecs Windows, les avertissements et les installations : on voit tout de suite si les plantages ont commencé le jour d'une mise à jour ou d'un nouveau pilote.<br>À distinguer du Moniteur de performance (perfmon seul) qui montre les compteurs en TEMPS RÉEL (CPU, RAM, disque). Ici l'historique des plantages, là les mesures live.<br>Le plus lisible des outils de diagnostic pour un utilisateur non technique."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Assistance à distance Windows", en:"Windows Remote Assistance",
-  need:"Se connecter graphiquement vers une autre machine SANS ouvrir de nouvelle session : on prend la main sur la session EN COURS, l'utilisateur voit l'écran et interagit.",
-  win:["msra","msra.exe"], winShow:"msra", img:"assistance_a_distance_windows",
-  linux:{none:true},
-  tip:"PARTAGE la session EN COURS de l'utilisateur : il reste devant son écran, il voit tout ce que tu fais et il peut continuer à cliquer avec toi.<br>msra = Microsoft Remote Assistance.<br>L'outil du dépannage pédagogique : on montre à l'utilisateur pendant qu'on corrige.<br>À distinguer de mstsc (Bureau à distance), qui lui ouvre une NOUVELLE session et verrouille l'écran local : l'utilisateur ne voit alors plus rien.<br>Successeur moderne sous Windows : Assistance rapide (Quick Assist)."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Restauration du système", en:"System Restore",
-  need:"Ramener le système à un point de restauration antérieur pour annuler un changement récent qui a cassé la machine.",
-  win:["rstrui","rstrui.exe"], winShow:"rstrui", img:"restauration_du_systeme",
-  linux:{none:true},
-  tip:"Ramène le système à un point de restauration antérieur pour annuler un changement récent qui a cassé la machine (pilote, mise à jour, installation).<br>rstrui = restore user interface.<br>Restaure les fichiers système, les programmes, les pilotes et le registre à une date antérieure, SANS toucher aux documents personnels.<br>À distinguer de l'onglet Protection du système (dans sysdm.cpl) qui ACTIVE la fonction et configure les points : rstrui est l'acte, Protection est l'interrupteur.<br>Si aucun point n'apparaît, c'est en général que la protection n'a jamais été activée sur le volume."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Versions précédentes", en:"Previous Versions",
-  need:"Restaurer un fichier ou un dossier à un état antérieur depuis ses propriétés.",
-  win:["versions précédentes","version précédente","versions precedente","version precedentes","onglet versions précédentes","clic droit","clicdroit","clic-droit","click droit","clic droit sur ce pc","clic droit proprietes"], winShow:"Clic droit > Propriétés > onglet Versions précédentes", img:"versions_precedentes",
-  linux:{none:true},
-  tip:"L'onglet, dans les propriétés d'un fichier ou d'un dossier, qui permet de le restaurer à un état antérieur ou d'en ouvrir une ancienne copie.<br>Il n'y a pas de commande de lancement : on y accède par un CLIC DROIT sur l'élément, le reste (Propriétés, puis l'onglet) n'est que de la navigation.<br>Alimenté par l'Historique des fichiers et par les points de restauration : sans eux, l'onglet est vide.<br>Repose sur les clichés instantanés (VSS = Volume Shadow Copy Service).<br>Sur un partage réseau, ce sont les clichés du SERVEUR qui alimentent l'onglet, pas ceux du poste."},
-
- {cat:"Maintenance / admin", color:"vert", name:"Paramètres (Windows)", en:"Settings",
-  need:"Ouvrir le hub de configuration moderne de Windows (réseau, comptes, applications, système, tout au même endroit).",
-  win:["ms-settings:","start ms-settings:"], winShow:"ms-settings:", img:"parametres",
-  linux:{none:true},
-  tip:"Le hub de configuration moderne de Windows 10 et 11 : réseau, comptes, applications, système, mises à jour, tout au même endroit.<br>Se lance par ms-settings: (avec les deux-points, ils font partie de la commande). URI = Uniform Resource Identifier, la même logique qu'une adresse web.<br>Remplace peu à peu le Panneau de configuration historique, sans l'avoir encore totalement absorbé : certains réglages fins n'existent toujours que dans les .cpl.<br>Chaque sous-page a son URI : ms-settings:network, ms-settings:storagesense, ms-settings:windowsupdate."},
-
- {cat:"Système / matériel", color:"rose", name:"Gérer les pilotes (magasin Windows)", en:"PnP Utility",
-  need:"Ajouter, lister ou supprimer un pilote tiers dans le magasin de pilotes Windows.",
-  win:["pnputil","pnputil /add-driver","pnputil /enum-drivers","pnputil /delete-driver"], winShow:"pnputil",
-  linux:{acc:["modprobe","lsmod","rmmod","modprobe lsmod rmmod","lsmod modprobe rmmod"], show:"lsmod / modprobe / rmmod"},
-  tip:"Ajoute, liste ou supprime un pilote tiers dans le magasin de pilotes de Windows, en ligne de commande.<br>pnputil = Plug and Play Utility. Le Plug and Play est la technologie qui détecte et configure automatiquement le matériel qu'on branche. Le magasin s'appelle le Driver Store : C:\\Windows\\System32\\DriverStore\\FileRepository (à ne pas confondre avec System32\\drivers, qui contient les .sys en service).<br>Ordre logique : /enum-drivers (lister), /add-driver (ajouter un .inf), /delete-driver (retirer). On liste toujours avant d'ajouter ou de supprimer.<br>.inf = Information File : le fichier qui décrit un pilote (matériel visé, fichiers à copier, clés de registre).<br>Intérêt : déployer des pilotes en masse par script PowerShell, au lieu du Gestionnaire de périphériques poste par poste. Linux, même logique : lsmod (lister), modprobe (charger), rmmod (retirer)."}
-];
-
-// ---- Logique ----
-const IMG_DIR = "images/";
-const imgFull = q => q.img ? IMG_DIR + q.img + ".png" : null;
-const imgMask = q => q.img ? IMG_DIR + q.img + "_masquee.png" : null;
-// Mode « Nom du panneau (FR) » : seuls les VRAIS panneaux graphiques, ceux qui
-// ont un nom francais affiche par Windows. Pas les commandes pures, pas les
-// menus contextuels.
-const PANELS = [
-  "Connexions réseau (cartes)",
-  "Paramètres réseau (profil Public/Privé)",
-  "Gestion des disques",
-  "Informations système (panneau)",
-  "Propriétés système",
-  "Gestionnaire de périphériques",
-  "A propos de Windows (version)",
-  "Gestionnaire des tâches",
-  "Observateur d'événements",
-  "Utilisateurs et groupes locaux",
-  "Services (demons système)",
-  "Nettoyage de disque",
-  "Options d'alimentation",
-  "Pare-feu Windows Defender (règles avancées)",
-  "Programmes et fonctionnalités (désinstaller)",
-  "Connexion Bureau a distance",
-  "Paramètres de stockage",
-  "Moniteur de fiabilité",
-  "Assistance à distance Windows",
-  "Restauration du système",
-  "Paramètres (Windows)"
-];
-const isPanel = q => PANELS.indexOf(q.name) >= 0;
-
-const norm = s => (s||"").toLowerCase()
-  .normalize("NFD").replace(/[\u0300-\u036f]/g,"")  // enlève les accents
-  .replace(/[\u2019\u02bc]/g,"'")                    // apostrophe typographique -> droite
-  .replace(/\s+/g," ").trim();
-// Tokenise une commande en mots-clés significatifs : on retire les
-// séparateurs d'enchaînement (; && | puis , /) et la ponctuation de
-// liaison, on garde les mots réels (ipconfig, /release, uname, -a...).
-// Le "/" et le "-" restent COLLES à leur mot (/release, -a) car ils
-// portent le sens ; ils ne sont séparateurs que seuls ou en fin.
-const SEP = /\s*(?:;|&&|\|\||\bpuis\b|,)\s*/g;
-function tokens(s){
-  return norm(s)
-    .replace(SEP," ")
-    .split(" ")
-    .map(t=>t.trim())
-    .filter(t=>t && t!=="/" && t!=="-" && t!=="|");
-}
-// Vrai si la saisie contient TOUS les mots-clés d'une des variantes
-// attendues (ordre libre, séparateurs indifférents). Une variante à un
-// seul token reste un match exact souple ; une variante multi-tokens
-// exige que chaque token soit présent dans la saisie.
-function matchAny(input, variants){
-  const got = tokens(input);
-  if(!got.length) return false;
-  const gotSet = new Set(got);
-  // Ensemble de TOUS les tokens légitimes de la carte (toutes variantes
-  // confondues) : sert à rejeter une commande parasite ajoutée à côté.
-  const allowed = new Set();
-  variants.forEach(v=>tokens(v).forEach(t=>allowed.add(t)));
-  // La saisie ne doit contenir AUCUN token étranger (ex. « systemctl »
-  // collé à « ip addr »). Sinon c'est faux, même si les bons mots-clés
-  // sont présents par ailleurs.
-  if(!got.every(t=>allowed.has(t))) return false;
-  // Et il faut qu'au moins une variante soit entièrement présente
-  // (ordre libre, séparateurs indifférents).
-  return variants.some(v=>{
-    const need = tokens(v);
-    if(!need.length) return false;
-    return need.every(t=>gotSet.has(t));
-  });
-}
-const dotColor = c => c==="jaune"?"var(--jaune)":c==="rose"?"var(--rose)":"var(--vert)";
-
-let pool=[], idx=0, correct=0, done=0, missed=[], answered=false;
-// isFullRun : le tour porte sur tout le pool du mode (pas un rattrapage).
-// Seul un sans-faute sur un tour complet declenche le message de bravo.
-let isFullRun=true;
-const el = id => document.getElementById(id);
-const linuxOn = () => el("linToggle").checked;
-
-function buildCatSelect(){
-  const cats=["Toutes",...[...new Set(DATA.map(d=>d.cat))]];
-  el("cat").innerHTML=cats.map(c=>`<option>${c}</option>`).join("");
-}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-
-function loadPool(list, full){
-  pool=shuffle(list.slice());
-  idx=0; correct=0; done=0; missed=[];
-  isFullRun = (full !== false);
-  render();
-}
-function currentList(){
-  const c=el("cat").value;
-  let list = c==="Toutes"?DATA:DATA.filter(d=>d.cat===c);
-  const mode=el("mode").value;
-  if(mode==="full"||mode==="mask") list=list.filter(d=>d.img);
-  if(mode==="fr") list=list.filter(isPanel);
-  return list;
-}
-
-function render(){
-  answered=false;
-  el("reveal").className="reveal";
-  el("win").value=""; el("win").className="";
-  el("lin").value=""; el("lin").className="";
-  el("win").disabled=false;
-  if(!pool.length){el("need").textContent="Aucune carte."; return;}
-  if(idx>=pool.length){
-    el("qcat").firstChild.textContent="Tour termine ";
-    el("qdot").style.background="transparent";
-    el("need").innerHTML = (!missed.length && isFullRun && done>1)
-      ? `<b>SANS FAUTE ! ${correct}/${done}</b><br>Tout le paquet, d'un trait. Bravo.`
-      : `Score du tour : <b>${correct}/${done}</b>.` + (missed.length?` ${missed.length} a refaire (bouton "Refaire les ratees").`:" Sans faute !");
-    el("linuxField").style.display="none";
-    el("win").style.display="none";
-    el("qimg").style.display="none";
-    return;
+const DATA = {
+ "protocoles": [
+  {
+   "id": "http",
+   "acronyme": "HTTP",
+   "nom_complet": "HyperText Transfer Protocol",
+   "couche": "7",
+   "role": "Protocole du web : transporte les pages et les requêtes entre le navigateur et le serveur, mais en clair (rien n'est chiffre).",
+   "ports": "80 (TCP)",
+   "faits_cles": [
+    "Verbes GET, POST, PUT, DELETE",
+    "Sans état (stateless), d'où les cookies pour tenir la session",
+    "En clair : lisible par qui ecoute le réseau"
+   ],
+   "tip": "Du trafic port 80 dans Wireshark et tu lis les URLs, parfois les données, en clair. C'est exactement pour ça qu'on est passe a HTTPS.",
+   "accept": [
+    "http",
+    "hypertext transfer protocol"
+   ],
+   "port_clair": [
+    "80"
+   ],
+   "port_tls": [],
+   "images": [
+    "http"
+   ]
+  },
+  {
+   "id": "https",
+   "acronyme": "HTTPS",
+   "nom_complet": "HyperText Transfer Protocol Secure",
+   "couche": "7",
+   "role": "HTTP glisse dans un tunnel TLS (Transport Layer Security) : le contenu web est chiffre de bout en bout.",
+   "ports": "443 (TCP)",
+   "faits_cles": [
+    "Le S vient de TLS (couche 6)",
+    "Chiffre l'échange, pas l'IP de destination",
+    "Cadenas du navigateur = TLS (Transport Layer Security) a validé le serveur"
+   ],
+   "tip": "Même en HTTPS, un observateur voit QUELLE IP tu contactes (couche 3), mais pas CE que tu échanges. Le ou n'est pas chiffre, le quoi si.",
+   "accept": [
+    "https",
+    "hypertext transfer protocol secure"
+   ],
+   "port_clair": [],
+   "port_tls": [
+    "443"
+   ],
+   "images": [
+    "https"
+   ]
+  },
+  {
+   "id": "dns",
+   "acronyme": "DNS",
+   "nom_complet": "Domain Name System",
+   "couche": "7",
+   "role": "L'annuaire d'Internet : traduit un nom de domaine (google.com) en adresse IP, parce que les machines routent sur IP, pas sur des noms.",
+   "ports": "53 (UDP en general, TCP pour les grosses reponses et les transferts de zone)",
+   "faits_cles": [
+    "UDP 53 : rapide, une requête une réponse",
+    "Cache DNS local",
+    "DNS HS = tu peux pinguer une IP mais pas un nom"
+   ],
+   "tip": "Test classique : ping 8.8.8.8 répond mais ping google.com echoue. IP OK, résolution de nom KO, ton problème est DNS, pas la connectivité.",
+   "accept": [
+    "dns",
+    "domain name system"
+   ],
+   "port_clair": [
+    "53"
+   ],
+   "port_tls": [],
+   "images": [
+    "cache_dns_ttl_routeur",
+    "resolution_dns_hierarchie_complete",
+    "resolution_dns_relai_routeur",
+    "tableau_types_enregistrements_dns",
+    "dns_tcp_udp_transfert_zone"
+   ]
+  },
+  {
+   "id": "dhcp",
+   "acronyme": "DHCP",
+   "nom_complet": "Dynamic Host Configuration Protocol",
+   "couche": "7",
+   "role": "Distribue automatiquement à chaque machine son IP, son masque, sa passerelle par défaut et son DNS dès qu'elle arrive sur le réseau.",
+   "ports": "67 (serveur) / 68 (client), UDP",
+   "faits_cles": [
+    "Séquence DORA : Discover, Offer, Request, Ack",
+    "Le Discover part en broadcast (la machine n'a pas encore d'IP)",
+    "Pas de réponse DHCP = souvent une IP APIPA (Automatic Private IP Addressing) 169.254.x.x"
+   ],
+   "tip": "Ta machine se retrouve en 169.254.x.x : elle a demandé une IP en DHCP et personne n'a répondu. Serveur DHCP injoignable ou HS.",
+   "accept": [
+    "dhcp",
+    "dynamic host configuration protocol"
+   ],
+   "port_clair": [
+    "67",
+    "68"
+   ],
+   "port_tls": [],
+   "images": [
+    "dhcp_phase1_discover",
+    "dhcp_phase2_offer",
+    "dhcp_phase3_4_request_ack",
+    "dhcp_recapitulatif_5_phases",
+    "dhcp_agent_relai_multi_reseaux"
+   ]
+  },
+  {
+   "id": "smtp",
+   "acronyme": "SMTP",
+   "nom_complet": "Simple Mail Transfer Protocol",
+   "couche": "7",
+   "role": "Protocole d'ENVOI du courrier : du client vers le serveur, puis de serveur à serveur. Il ne lit jamais les mails.",
+   "ports": "25 (serveur a serveur), 587 (soumission client authentifiee), 465 (SMTP sur TLS)",
+   "faits_cles": [
+    "Envoi seulement, la lecture c'est IMAP ou POP3",
+    "Port 25 souvent bloque par les FAI contre le spam"
+   ],
+   "tip": "Moyen mnémo : SMTP pousse (send), IMAP et POP3 tirent. Tu reçois mais tu n'envoies pas ? Regarde SMTP en premier.",
+   "accept": [
+    "simple mail transfer protocol",
+    "smtp"
+   ],
+   "port_clair": [
+    "25",
+    "587"
+   ],
+   "port_tls": [
+    "465"
+   ],
+   "images": [
+    "smtp_imap_pop3"
+   ]
+  },
+  {
+   "id": "imap",
+   "acronyme": "IMAP",
+   "nom_complet": "Internet Message Access Protocol",
+   "couche": "7",
+   "role": "Lecture du courrier en LAISSANT les messages sur le serveur, synchronise sur tous tes appareils.",
+   "ports": "143 (clair), 993 (sur TLS)",
+   "faits_cles": [
+    "Les mails restent sur le serveur",
+    "Multi-appareils synchronisés",
+    "Remplace POP3 dans la plupart des usages modernes"
+   ],
+   "tip": "Tu lis un mail sur ton téléphone et il apparaît déjà lu sur ton PC : c'est IMAP. POP3 ne sait pas faire ça.",
+   "accept": [
+    "imap",
+    "internet message access protocol"
+   ],
+   "port_clair": [
+    "143"
+   ],
+   "port_tls": [
+    "993"
+   ],
+   "images": [
+    "smtp_imap_pop3"
+   ]
+  },
+  {
+   "id": "pop3",
+   "acronyme": "POP3",
+   "nom_complet": "Post Office Protocol version 3",
+   "couche": "7",
+   "role": "Lecture du courrier en Téléchargeant les messages en local, souvent en les supprimant du serveur.",
+   "ports": "110 (clair), 995 (sur TLS)",
+   "faits_cles": [
+    "Télécharge puis efface souvent du serveur",
+    "Un seul appareil en pratique",
+    "Plus vieux, en recul face a IMAP"
+   ],
+   "tip": "Tes mails disparaissent du webmail après les avoir relevés sur un PC : c'est du POP3 configure en 'supprimer après téléchargement'.",
+   "accept": [
+    "pop3",
+    "pop",
+    "post office protocol",
+    "post office protocol version 3",
+    "post office protocol 3"
+   ],
+   "port_clair": [
+    "110"
+   ],
+   "port_tls": [
+    "995"
+   ],
+   "images": [
+    "smtp_imap_pop3"
+   ]
+  },
+  {
+   "id": "ftp",
+   "acronyme": "FTP",
+   "nom_complet": "File Transfer Protocol",
+   "couche": "7",
+   "role": "Transfert de fichiers entre client et serveur, mais EN CLAIR, identifiants compris.",
+   "ports": "21 (commande), 20 (donnees en mode actif)",
+   "faits_cles": [
+    "En clair : login et fichiers lisibles sur le réseau",
+    "Deux canaux : commande et données",
+    "A éviter, remplace par SFTP ou FTPS"
+   ],
+   "tip": "FTP fait voyager ton mot de passe en clair. Sur un réseau non maîtrise, c'est un cadeau pour qui ecoute. D'où SFTP.",
+   "accept": [
+    "file transfer protocol",
+    "ftp"
+   ],
+   "port_clair": [
+    "21"
+   ],
+   "port_tls": [
+    "990"
+   ],
+   "images": [
+    "ftp",
+    "ftps"
+   ]
+  },
+  {
+   "id": "sftp",
+   "acronyme": "SFTP",
+   "nom_complet": "SSH File Transfer Protocol",
+   "couche": "7",
+   "role": "Transfert de fichiers entièrement chiffré, qui réutilise le canal de l'accès distant sécurisé en ligne de commande (port 22). À ne pas confondre avec le transfert en clair.",
+   "ports": "22 (TCP, celui de SSH)",
+   "faits_cles": [
+    "Ce n'est pas 'FTP sécurisé', c'est du transfert sur SSH",
+    "Un seul port, le 22",
+    "A ne pas confondre avec FTPS (FTP sur TLS, Transport Layer Security)"
+   ],
+   "tip": "Piège d'exam : SFTP utilise le port 22 (SSH), pas le 21. Même mot 'FTP' dedans, mécanique totalement différente.",
+   "accept": [
+    "sftp",
+    "ssh file transfer protocol"
+   ],
+   "port_clair": [
+    "22"
+   ],
+   "port_tls": [],
+   "images": [
+    "sftp"
+   ]
+  },
+  {
+   "id": "ssh",
+   "acronyme": "SSH",
+   "nom_complet": "Secure Shell",
+   "couche": "7",
+   "role": "Accès distant à une machine en ligne de commande, entièrement chiffre. Le standard pour administrer un serveur Linux.",
+   "ports": "22 (TCP)",
+   "faits_cles": [
+    "Remplace Telnet",
+    "Authentification par mot de passe ou par clé",
+    "Sert aussi de tunnel (SFTP, redirection de ports)"
+   ],
+   "tip": "Quand tu administres ta VM ubuntu-srv à distance, c'est SSH sur le 22. Telnet ferait pareil mais en clair, donc jamais.",
+   "accept": [
+    "secure shell",
+    "ssh"
+   ],
+   "port_clair": [
+    "22"
+   ],
+   "port_tls": [],
+   "images": [
+    "tunnel_ssh_cntlm_proxy",
+    "tunnel_ssh_redirection_port"
+   ]
+  },
+  {
+   "id": "telnet",
+   "acronyme": "Telnet",
+   "nom_complet": "Telnet (Terminal Network)",
+   "couche": "7",
+   "role": "Accès distant en ligne de commande mais EN CLAIR. Obsolète pour l'administration, remplace par SSH.",
+   "ports": "23 (TCP)",
+   "faits_cles": [
+    "Tout circule en clair, mot de passe compris",
+    "Obsolète pour l'admin",
+    "Encore utile pour tester si un port répond (telnet ip port)"
+   ],
+   "tip": "Telnet reste pratique pour un test rapide : 'telnet 192.168.1.1 80' te dit si le port 80 répond. Jamais pour se connecter pour de vrai.",
+   "accept": [
+    "telnet",
+    "telnet terminal network"
+   ],
+   "port_clair": [
+    "23"
+   ],
+   "port_tls": [],
+   "images": [
+    "telnet"
+   ]
+  },
+  {
+   "id": "snmp",
+   "acronyme": "SNMP",
+   "nom_complet": "Simple Network Management Protocol",
+   "couche": "7",
+   "role": "Supervision des équipements réseau (switchs, routeurs, imprimantes) : remonte l'état et les compteurs vers un superviseur.",
+   "ports": "161 (requetes, UDP), 162 (traps, UDP)",
+   "faits_cles": [
+    "v1/v2c avec community string en clair (faible), v3 chiffre",
+    "Traps = alertes envoyées spontanément par l'équipement",
+    "Cœur des outils type Nagios, Zabbix"
+   ],
+   "tip": "Ton outil de supervision affiche 'switch port down' : l'info est très souvent remontée en SNMP sur le port 161.",
+   "accept": [
+    "simple network management protocol",
+    "snmp"
+   ],
+   "port_clair": [
+    "161",
+    "162"
+   ],
+   "port_tls": [],
+   "images": [
+    "snmp"
+   ]
+  },
+  {
+   "id": "ntp",
+   "acronyme": "NTP",
+   "nom_complet": "Network Time Protocol",
+   "couche": "7",
+   "role": "Synchronise l'horloge des machines sur une référence commune. Plus critique qu'il n'y paraît.",
+   "ports": "123 (UDP)",
+   "faits_cles": [
+    "Hiérarchie de strates (stratum)",
+    "Une horloge décalée casse Kerberos/Active Directory et invalide les certificats TLS (Transport Layer Security)",
+    "Quelques minutes d'écart suffisent à bloquer une auth AD"
+   ],
+   "tip": "En Active Directory, un poste à l'heure fausse n'ouvre plus de session (Kerberos refuse). NTP n'est pas du confort, c'est vital.",
+   "accept": [
+    "network time protocol",
+    "ntp"
+   ],
+   "port_clair": [
+    "123"
+   ],
+   "port_tls": [],
+   "images": [
+    "ntp"
+   ]
+  },
+  {
+   "id": "proxy",
+   "acronyme": "Proxy",
+   "nom_complet": "Proxy (mandataire applicatif)",
+   "couche": "7",
+   "role": "Relais qui s'intercale entre le client et le web : il voit, filtre et journalise le contenu de couche 7.",
+   "ports": "souvent 3128 (Squid) ou 8080, variable",
+   "faits_cles": [
+    "Filtrage d'URL, cache, journalisation",
+    "Un proxy explicite se configure dans le navigateur ou l'OS",
+    "Différent du NAT : le proxy comprend le contenu applicatif, le NAT ne touche qu'aux adresses"
+   ],
+   "tip": "En entreprise, certains sites bloques mais pas d'autres : c'est souvent un proxy qui inspecte tes requêtes HTTP, pas le pare-feu.",
+   "accept": [
+    "proxy",
+    "proxy mandataire applicatif"
+   ],
+   "port_clair": [
+    "3128",
+    "8080"
+   ],
+   "port_tls": [],
+   "images": [
+    "principe_serveur_proxy",
+    "proxy_decapsulation_reencapsulation",
+    "proxy_dmz_pare_feu"
+   ]
+  },
+  {
+   "id": "tls",
+   "acronyme": "TLS",
+   "nom_complet": "Transport Layer Security",
+   "couche": "6",
+   "role": "Crée le tunnel chiffré qui protège les échanges. C'est le S de HTTPS et le successeur de SSL (Secure Sockets Layer).",
+   "ports": "pas de port propre, il habille un autre protocole (443 avec HTTP, 993 avec IMAP...)",
+   "faits_cles": [
+    "Versions 1.2 et 1.3 (les seules sûres aujourd'hui)",
+    "Chiffrement + authentification du serveur par certificat",
+    "Négocie au début de la connexion (handshake TLS)"
+   ],
+   "tip": "Cadenas du navigateur = TLS a validé le certificat et chiffre la suite. Avertissement de certificat = TLS te prévient que l'identité du serveur cloche.",
+   "accept": [
+    "tls",
+    "transport layer security"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "tls_ssl_handshake"
+   ]
+  },
+  {
+   "id": "ssl",
+   "acronyme": "SSL",
+   "nom_complet": "Secure Sockets Layer",
+   "couche": "6",
+   "role": "L'ancetre de TLS (Transport Layer Security), aujourd'hui obsolète et vulnérable, à ne plus utiliser.",
+   "ports": "historiquement 443 avec HTTPS",
+   "faits_cles": [
+    "Toutes les versions SSL sont cassees (POODLE, etc.)",
+    "Le mot SSL persiste dans le langage courant, mais on utilise TLS (Transport Layer Security)",
+    "Désactiver SSL = bonne pratique de durcissement"
+   ],
+   "tip": "Quand quelqu'un dit 'certificat SSL' en 2026, il parle en réalité de TLS (Transport Layer Security). Le vrai SSL, on le désactive sur les serveurs.",
+   "accept": [
+    "secure sockets layer",
+    "ssl"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "tls_ssl_handshake"
+   ]
+  },
+  {
+   "id": "encodage",
+   "acronyme": "ASCII / UTF-8",
+   "nom_complet": "Encodage de caracteres (ASCII, UTF-8)",
+   "couche": "6",
+   "role": "Met les caractères dans un format commun pour que deux machines différentes lisent le même texte.",
+   "ports": null,
+   "faits_cles": [
+    "ASCII : 128 caractères, l'anglais de base",
+    "UTF-8 : tout Unicode, compatible ASCII, standard du web",
+    "Mauvais encodage = caractères bizarres (mojibake)"
+   ],
+   "tip": "Des 'Ã©' à la place des 'e accent' dans un fichier : problème d'encodage couche 6, le texte a été lu dans le mauvais format.",
+   "accept": [
+    "ascii",
+    "utf 8",
+    "utf8",
+    "encodage"
+   ],
+   "port_clair": [],
+   "port_tls": []
+  },
+  {
+   "id": "formats",
+   "acronyme": "JPEG / MP4 / ZIP",
+   "nom_complet": "Formats compresses (JPEG, MP4, ZIP)",
+   "couche": "6",
+   "role": "Encodent et compressent images, vidéos et fichiers pour les rendre transportables et légers.",
+   "ports": null,
+   "faits_cles": [
+    "La présentation gère la forme des données, pas leur transport",
+    "Compression avec perte (JPEG, MP4) ou sans perte (ZIP, PNG)",
+    "Interprétés à ce niveau avant remise à l'application"
+   ],
+   "tip": "Une image est encodée (JPEG) avant l'envoi puis décodée à l'arrivee : c'est de la présentation (couche 6), pas du transport.",
+   "accept": [
+    "jpeg",
+    "mp4",
+    "zip"
+   ],
+   "port_clair": [],
+   "port_tls": []
+  },
+  {
+   "id": "netbios",
+   "acronyme": "NetBIOS",
+   "nom_complet": "Network Basic Input/Output System",
+   "couche": "5",
+   "role": "Ancien système de nommage et de dialogue des machines Windows sur un réseau local.",
+   "ports": "137/138 (UDP), 139 (TCP)",
+   "faits_cles": [
+    "Nommage des machines Windows en local",
+    "Accompagne SMB (Server Message Block) pour le partage",
+    "Vieux et bruyant, souvent désactive ou filtre aujourd'hui"
+   ],
+   "tip": "Dans un vieux réseau Windows, le 'voisinage réseau' qui liste les PC par leur nom, c'est NetBIOS qui travaille dessous.",
+   "accept": [
+    "netbios",
+    "network basic input output system"
+   ],
+   "port_clair": [
+    "137",
+    "138",
+    "139"
+   ],
+   "port_tls": [],
+   "images": [
+    "netbios_over_tcpip"
+   ]
+  },
+  {
+   "id": "rpc",
+   "acronyme": "RPC",
+   "nom_complet": "Remote Procedure Call",
+   "couche": "5",
+   "role": "Permet à un programme d'exécuter du code sur une machine distante comme s'il etait local.",
+   "ports": "135 (mappeur d'endpoints sous Windows) puis ports dynamiques",
+   "faits_cles": [
+    "Brique de base de nombreux services Windows et Active Directory",
+    "Ports dynamiques, casse-tête pour les pare-feux",
+    "Grosse surface d'attaque"
+   ],
+   "tip": "Beaucoup de communications internes d'Active Directory reposent sur RPC. D'où l'enjeu d'ouvrir les bons ports entre un client et un contrôleur de domaine.",
+   "accept": [
+    "remote procedure call",
+    "rpc"
+   ],
+   "port_clair": [
+    "135"
+   ],
+   "port_tls": [],
+   "images": [
+    "rpc"
+   ]
+  },
+  {
+   "id": "nfs",
+   "acronyme": "NFS",
+   "nom_complet": "Network File System",
+   "couche": "5",
+   "role": "Partage de fichiers dans le monde Unix/Linux, l'équivalent de SMB (Server Message Block) cote Windows.",
+   "ports": "2049 (TCP/UDP)",
+   "faits_cles": [
+    "Monde Unix/Linux (SMB = Server Message Block, monde Windows)",
+    "Monte un dossier distant comme s'il etait local",
+    "Historiquement peu sécurisé, à cadrer (NFSv4 améliore)"
+   ],
+   "tip": "Sous Linux, un dossier distant qui apparaît dans ton arborescence comme un dossier local, c'est souvent un montage NFS.",
+   "accept": [
+    "network file system",
+    "nfs"
+   ],
+   "port_clair": [
+    "2049"
+   ],
+   "port_tls": [],
+   "images": [
+    "nfs"
+   ]
+  },
+  {
+   "id": "tcp",
+   "acronyme": "TCP",
+   "nom_complet": "Transmission Control Protocol",
+   "couche": "4",
+   "role": "Transport FIABLE et orienté connexion : garantit que tout arrive, dans l'ordre, sans perte, au prix d'un peu de lenteur.",
+   "ports": "porte les ports des applis (80, 443, 22...), pas de port propre",
+   "faits_cles": [
+    "Établissement en 3 temps : SYN, SYN-ACK, ACK",
+    "Accusés de réception et retransmission des pertes",
+    "Flags : SYN, ACK, FIN, RST",
+    "Fermeture propre avec FIN"
+   ],
+   "tip": "Un RST renvoyé, c'est TCP qui claque la porte : port ferme ou connexion refusée. Très visible dans un scan ou un diagnostic.",
+   "accept": [
+    "tcp",
+    "transmission control protocol"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "tableau_champs_segment_tcp",
+    "fenetre_glissante_tcp",
+    "fermeture_connexion_tcp",
+    "principe_checksum_transmission_reception",
+    "progression_fenetre_glissante_tcp",
+    "retransmission_rapide_tcp_ack_duplique",
+    "three_way_handshake_tcp",
+    "exemple_port_source_destination_http",
+    "tableau_champs_port_source_destination",
+    "decoupage_message_en_pdu"
+   ]
+  },
+  {
+   "id": "udp",
+   "acronyme": "UDP",
+   "nom_complet": "User Datagram Protocol",
+   "couche": "4",
+   "role": "Transport RAPIDE et sans connexion : envoie sans vérifier la réception, idéal quand la vitesse prime sur la fiabilité.",
+   "ports": "porte les ports applicatifs (53, 67/68, 123...), pas de port propre",
+   "faits_cles": [
+    "Pas de handshake, pas d'accuse de réception",
+    "Utilise par DNS, DHCP (Dynamic Host Configuration Protocol), NTP, streaming, VoIP, jeux",
+    "Paquet perdu = tant pis, pas de retransmission"
+   ],
+   "tip": "Un appel visio qui saccade un instant puis repart sans tout rejouer : typiquement de l'UDP, qui préfère sauter l'image perdue plutôt que d'attendre.",
+   "accept": [
+    "udp",
+    "user datagram protocol"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "structure_datagramme_udp"
+   ]
+  },
+  {
+   "id": "pat",
+   "acronyme": "PAT",
+   "nom_complet": "Port Address Translation (NAT overload)",
+   "couche": "4",
+   "role": "Variante du NAT (Network Address Translation) qui permet à des dizaines de machines de partager une seule IP publique, en suivant chaque connexion sortante individuellement. Ne fonctionne pas sans NAT.",
+   "ports": null,
+   "faits_cles": [
+    "Ajoute la translation de PORT à la translation d'adresse du NAT",
+    "Dépend de NAT : PAT sans NAT n'existe pas (aussi appelé NAT overload)",
+    "C'est ce que fait réellement ta box",
+    "Chaque connexion sortante suivie par un couple IP:port"
+   ],
+   "tip": "Deux PC ouvrent google.com en même temps : même IP publique en sortie, la box les différencie par le port source. C'est PAT. Sans lui, NAT ne saurait pas à qui renvoyer la réponse.",
+   "accept": [
+    "pat",
+    "port address translation",
+    "port address translation nat overload"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "schema_reseau_pat"
+   ]
+  },
+  {
+   "id": "nat",
+   "acronyme": "NAT",
+   "nom_complet": "Network Address Translation",
+   "couche": "3",
+   "role": "Traduit les IP privées du réseau local en IP publique pour sortir sur Internet. Seul, il fait du 1 pour 1 (une privée pour une publique).",
+   "ports": null,
+   "faits_cles": [
+    "Réécrit l'adresse IP (opération de couche 3)",
+    "NAT seul = correspondance 1 pour 1, insuffisant dès qu'il y à plusieurs machines",
+    "C'est PAT (couche 4) qui permet le partage à plusieurs derrière une seule IP publique",
+    "Masque les machines internes vues de l'extérieur"
+   ],
+   "tip": "NAT seul ferait tenir UNE machine derrière l'IP publique. Mais chez toi il y a le téléphone, l'imprimante, la console, deux PC... Il faut donc PAT par-dessus, sinon ça ne suit pas.",
+   "accept": [
+    "nat",
+    "network address translation"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "nat_reecriture_source_ping",
+    "nat_01",
+    "nat_02",
+    "nat_dynamique",
+    "schema_reseau_pat",
+    "schema_reseau_redirection_port"
+   ]
+  },
+  {
+   "id": "ipv4",
+   "acronyme": "IPv4",
+   "nom_complet": "Internet Protocol version 4",
+   "couche": "3",
+   "role": "Le système d'adressage historique d'Internet : achemine les paquets de bout en bout via des adresses de 32 bits.",
+   "ports": null,
+   "faits_cles": [
+    "Adresse 32 bits (ex 192.168.1.1), pénurie d'adresses",
+    "Champ TTL (Time To Live) anti-boucle",
+    "Fragmentation possible (DF/MF)",
+    "Champ DSCP (Differentiated Services Code Point)/ToS pour la QoS (Quality of Service)"
+   ],
+   "tip": "Quand tu tapes une IP comme 192.168.1.10, tu manipules de l'IPv4 (couche 3). C'est l'adresse qui reste constante du départ à la destination.",
+   "accept": [
+    "ipv4",
+    "internet protocol version 4"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "paquet_ipv4",
+    "calcul_ihl_options_bourrage_ipv4",
+    "fragmentation_ip_tableau_fragments_ipv4"
+   ]
+  },
+  {
+   "id": "ipv6",
+   "acronyme": "IPv6",
+   "nom_complet": "Internet Protocol version 6",
+   "couche": "3",
+   "role": "Le successeur d'IPv4 : adresses de 128 bits pour un espace quasi infini, pensé pour lever la pénurie.",
+   "ports": null,
+   "faits_cles": [
+    "Adresse 128 bits (hexadécimale)",
+    "NDP (Neighbor Discovery Protocol) remplace ARP (Address Resolution Protocol)",
+    "Flow Label et Traffic Class (équivalent du DSCP, Differentiated Services Code Point)",
+    "Plus de broadcast classique"
+   ],
+   "tip": "Une adresse pleine de ':' et de lettres (fe80::1), c'est de l'IPv6. La ou IPv4 utilisait ARP (Address Resolution Protocol) pour trouver la MAC, IPv6 utilise NDP (Neighbor Discovery Protocol).",
+   "accept": [
+    "ipv6",
+    "internet protocol version 6"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "paquet_ipv6",
+    "en_tete_extension_fragment_ipv6"
+   ]
+  },
+  {
+   "id": "icmp",
+   "acronyme": "ICMP",
+   "nom_complet": "Internet Control Message Protocol",
+   "couche": "3",
+   "role": "Le protocole de DIAGNOSTIC du réseau. Deux fonctions : tester la connectivité (ping) ET signaler les erreurs (TTL, Time To Live, épuisé ; destination injoignable).",
+   "ports": "aucun (ICMP roule directement sur IP, protocole numero 1, il n'a pas de notion de port)",
+   "faits_cles": [
+    "Fonction 1 : ping = echo request / echo reply (connectivité)",
+    "Fonction 2 : signalisation d'erreurs",
+    "TTL (Time To Live) exceeded = la base même de traceroute",
+    "Destination Unreachable = hôte, réseau ou port injoignable",
+    "Ne transporte aucune donnée utilisateur, que du contrôle"
+   ],
+   "tip": "Ton ping répond mais traceroute meurt au 3e saut : ce sont les messages ICMP 'time exceeded' renvoyés par chaque routeur qui font marcher traceroute. Sans ICMP, pas de traceroute.",
+   "accept": [
+    "icmp",
+    "internet control message protocol"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "structure_paquet_icmp",
+    "ttl_expire_icmp_type_11"
+   ]
+  },
+  {
+   "id": "ndp",
+   "acronyme": "NDP",
+   "nom_complet": "Neighbor Discovery Protocol",
+   "couche": "3",
+   "role": "L'équivalent d'ARP (Address Resolution Protocol) pour IPv6 : associe les adresses IP aux adresses MAC sur le réseau local, en s'appuyant sur ICMPv6 (Internet Control Message Protocol for IPv6).",
+   "ports": null,
+   "faits_cles": [
+    "Remplace ARP (Address Resolution Protocol) en IPv6",
+    "S'appuie sur ICMPv6 (Internet Control Message Protocol for IPv6)",
+    "Découverte des routeurs et des voisins sans broadcast massif"
+   ],
+   "tip": "En IPv6, la question 'qui a cette IP ?' ne passe plus par ARP (Address Resolution Protocol) mais par NDP. Le cache ARP devient la table de voisinage NDP.",
+   "accept": [
+    "ndp",
+    "neighbor discovery protocol"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "ndp"
+   ]
+  },
+  {
+   "id": "rip",
+   "acronyme": "RIP",
+   "nom_complet": "Routing Information Protocol",
+   "couche": "3",
+   "role": "Protocole de routage interne simple : choisit la route au nombre de sauts (le moins de routeurs traversés gagne).",
+   "ports": "520 (UDP)",
+   "faits_cles": [
+    "Vecteur de distance",
+    "Métrique = nombre de sauts, max 15 (16 = inatteignable)",
+    "Split horizon et route poisoning contre les boucles",
+    "Simple mais bête : ignore le débit réel"
+   ],
+   "tip": "RIP prend le chemin avec le moins de routeurs même s'il passe par une liaison lente. Son défaut : il compte les sauts, pas la vitesse. OSPF (Open Shortest Path First) corrige ça.",
+   "accept": [
+    "rip",
+    "routing information protocol"
+   ],
+   "port_clair": [
+    "520"
+   ],
+   "port_tls": [],
+   "images": [
+    "comparatif_ripv1_ripv2",
+    "comparatif_ripv1_ripv2_ospf_bgp"
+   ]
+  },
+  {
+   "id": "ospf",
+   "acronyme": "OSPF",
+   "nom_complet": "Open Shortest Path First",
+   "couche": "3",
+   "role": "Protocole de routage interne évolué : calcule la route la plus rapide selon le coût réel des liens, pas le simple nombre de sauts.",
+   "ports": "protocole IP 89 (pas de port TCP/UDP)",
+   "faits_cles": [
+    "État de lien (link-state), algo SPF (Dijkstra)",
+    "Découpage en areas",
+    "Interne à un système autonome (IGP)",
+    "Converge mieux et plus vite que RIP (Routing Information Protocol)"
+   ],
+   "tip": "OSPF préfère deux liaisons fibre rapides à une seule liaison lente, là où RIP (Routing Information Protocol) aurait pris la lente parce qu'elle a moins de sauts.",
+   "accept": [
+    "open shortest path first",
+    "ospf"
+   ],
+   "port_clair": [
+    "89"
+   ],
+   "port_tls": [],
+   "images": [
+    "comparatif_ripv1_ripv2_ospf_bgp",
+    "ospf_areas_abr_asbr",
+    "ospf_cout_liens_bande_passante",
+    "graphe_pondere_plus_court_chemin",
+    "chemins_multiples_vers_destination"
+   ]
+  },
+  {
+   "id": "bgp",
+   "acronyme": "BGP",
+   "nom_complet": "Border Gateway Protocol",
+   "couche": "3",
+   "role": "Le protocole de routage ENTRE opérateurs, celui qui fait tenir Internet en reliant les systèmes autonomes (AS, système autonome).",
+   "ports": "179 (TCP)",
+   "faits_cles": [
+    "Vecteur de chemin, entre AS (EGP)",
+    "Décisions selon des politiques et des accords, pas juste technique",
+    "Le protocole d'Internet à l'échelle mondiale"
+   ],
+   "tip": "Quand un opérateur annonce par erreur les routes d'un autre, des services mondiaux deviennent injoignables : c'est le fameux 'BGP hijacking'.",
+   "accept": [
+    "bgp",
+    "border gateway protocol"
+   ],
+   "port_clair": [
+    "179"
+   ],
+   "port_tls": [],
+   "images": [
+    "bgp_entre_systemes_autonomes"
+   ]
+  },
+  {
+   "id": "svi",
+   "acronyme": "SVI",
+   "nom_complet": "Switch Virtual Interface",
+   "couche": "3",
+   "role": "La passerelle interne d'un commutateur de niveau 3 : on lui attribue une adresse IP par VLAN pour faire communiquer les VLANs entre eux sans routeur externe.",
+   "ports": null,
+   "faits_cles": [
+    "Interface IP virtuelle portee par un switch L3",
+    "Permet le routage inter-VLAN (Virtual LAN) sans routeur dédié",
+    "Une SVI par VLAN (Virtual LAN) à router"
+   ],
+   "tip": "Deux VLANs qui doivent se parler : au lieu d'un routeur externe, un switch L3 porte une SVI (une IP) dans chaque VLAN (Virtual LAN) et route entre eux. C'est le 'router on a stick' remplace en interne.",
+   "accept": [
+    "svi",
+    "switch virtual interface"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "decision_consultation_table_routage"
+   ]
+  },
+  {
+   "id": "ipsec",
+   "acronyme": "IPsec",
+   "nom_complet": "Internet Protocol Security",
+   "couche": "3",
+   "role": "Le blindage de la couche 3 : chiffre et authentifie les paquets IP entiers pour créer des tunnels VPN sécurisés.",
+   "ports": "500 (UDP, IKE), 4500 (UDP, NAT-T), protocoles ESP (50) et AH (51)",
+   "faits_cles": [
+    "Chiffre au niveau IP (protège tout ce qui est au-dessus)",
+    "ESP (Encapsulating Security Payload) = chiffrement, AH (Authentication Header) = authentification/intégrité",
+    "Souvent associé à L2TP (L2TP/IPsec) pour les VPN",
+    "Deux modes : transport et tunnel"
+   ],
+   "tip": "Un VPN d'entreprise site à site : les paquets qui sortent sur Internet sont enrobés par IPsec, illisibles en route, et reconstitués à l'autre bout. Le chiffrement se fait en couche 3, donc HTTP, mail, tout ce qui passe dedans est protégé d'un coup.",
+   "accept": [
+    "internet protocol security",
+    "ipsec"
+   ],
+   "port_clair": [
+    "500",
+    "4500"
+   ],
+   "port_tls": [],
+   "images": [
+    "millefeuille_encapsulation_vpn"
+   ]
+  },
+  {
+   "id": "ip_spoofing",
+   "acronyme": "IP Spoofing",
+   "nom_complet": "IP Spoofing (usurpation d'adresse IP source)",
+   "couche": "3",
+   "type": "attaque",
+   "role": "Le pirate falsifie l'adresse IP source de ses paquets pour se faire passer pour un autre, ou pour noyer une cible via une attaque par amplification (DDoS, Distributed Denial of Service).",
+   "ports": null,
+   "faits_cles": [
+    "Falsifie le champ IP source du paquet",
+    "Base des attaques DDoS (Distributed Denial of Service) par amplification (DNS, NTP)",
+    "Contre-mesure : filtrage anti-spoofing en bordure (BCP38)"
+   ],
+   "tip": "Amplification : l'attaquant envoie une petite requête DNS en mettant l'IP de la victime comme source. Le serveur DNS répond, en gros, à la victime. Multiplié par des milliers de serveurs, ça la submerge.",
+   "accept": [
+    "ip",
+    "ip spoofing",
+    "ip spoofing usurpation d adresse ip source",
+    "spoofing"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "ip_spoofing"
+   ]
+  },
+  {
+   "id": "bgp_hijacking",
+   "acronyme": "BGP Hijacking",
+   "nom_complet": "BGP Hijacking (detournement de routes)",
+   "couche": "3",
+   "type": "attaque",
+   "role": "Détournement de routes à l'échelle d'Internet : un opérateur annonce en BGP des routes qui ne sont pas les siennes, et aspire le trafic d'un service ou d'un pays entier.",
+   "ports": null,
+   "faits_cles": [
+    "Exploite la confiance implicite entre opérateurs en BGP",
+    "Peut rediriger le trafic d'un grand service (Google, etc.)",
+    "Contre-mesures : RPKI (Resource Public Key Infrastructure), filtrage des annonces"
+   ],
+   "tip": "Un opérateur annonce par erreur ou par malveillance 'le trafic de ce grand service, c'est par moi'. Les autres le croient, et une partie d'Internet se retrouve déroutée vers lui. Déjà arrive pour de vrai à l'échelle mondiale.",
+   "accept": [
+    "bgp",
+    "bgp hijacking",
+    "bgp hijacking detournement de routes",
+    "hijacking"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "bgp_hijacking"
+   ]
+  },
+  {
+   "id": "ethernet",
+   "acronyme": "Ethernet 802.3",
+   "nom_complet": "Ethernet (IEEE 802.3)",
+   "couche": "2",
+   "role": "Le standard filaire qui définit la trame : l'enveloppe universelle du réseau local câble, recréée à chaque saut.",
+   "ports": null,
+   "faits_cles": [
+    "Trame = MAC destination + MAC source + EtherType + données + FCS (Frame Check Sequence)",
+    "FCS (Frame Check Sequence) : contrôle d'intégrité, trame abîmée = jetée",
+    "La trame est refaite à chaque équipement (contrairement au paquet IP)"
+   ],
+   "tip": "Le paquet IP (C3) reste identique de bout en bout, mais la trame Ethernet qui l'emballe est jetée et recréée à chaque routeur. Couche 2 = local, saut par saut.",
+   "accept": [
+    "ethernet",
+    "802.3"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "switch_reseau_local",
+    "trame_ethernet"
+   ]
+  },
+  {
+   "id": "arp",
+   "acronyme": "ARP",
+   "nom_complet": "Address Resolution Protocol",
+   "couche": "2",
+   "role": "L'annuaire du réseau local : demande 'qui a cette IP ?' pour obtenir la MAC correspondante et pouvoir livrer la trame.",
+   "ports": null,
+   "faits_cles": [
+    "Fait le lien IP (C3) vers MAC (C2)",
+    "Diffusion (broadcast) sur le LAN",
+    "Résultat gardé en cache ARP",
+    "EtherType 0x0806"
+   ],
+   "tip": "Avant même de parler à ta passerelle, ton PC doit connaître SA MAC : il crie en ARP 'qui a 192.168.1.1 ?'. Pas de réponse ARP = passerelle injoignable, même avec la bonne IP.",
+   "accept": [
+    "address resolution protocol",
+    "arp"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "decision_meme_reseau_ou_passerelle"
+   ]
+  },
+  {
+   "id": "wifi_c2",
+   "acronyme": "Wi-Fi 802.11",
+   "nom_complet": "Wi-Fi (IEEE 802.11)",
+   "couche": "2 (le signal est en couche 1)",
+   "role": "Le standard sans fil : gère l'accès au média radio partage et l'association aux points d'accès.",
+   "ports": null,
+   "faits_cles": [
+    "Déclinaisons a/b/g/n/ac/ax",
+    "CSMA/CA : évite les collisions (ne peut pas les détecter en radio)",
+    "Bandes 2.4 GHz (portee) et 5 GHz (débit)",
+    "La partie signal relève de la couche 1"
+   ],
+   "tip": "En Wi-Fi on ne peut pas 'écouter puis foncer' comme sur câble : on ne détecte pas ses propres collisions en radio. D'où CSMA/CA, qui demande la parole AVANT d'émettre.",
+   "accept": [
+    "wifi",
+    "wi fi",
+    "802.11"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "csma_ca_rts_cts_ack"
+   ]
+  },
+  {
+   "id": "vlan",
+   "acronyme": "VLAN 802.1Q",
+   "nom_complet": "Virtual LAN Tagging (IEEE 802.1Q)",
+   "couche": "2",
+   "role": "Segmente logiquement un même switch en plusieurs réseaux étanches, en ajoutant une étiquette dans la trame.",
+   "ports": null,
+   "faits_cles": [
+    "Tag de 4 octets insère dans la trame",
+    "ID de VLAN de 1 a 4094 (utilisables 2 a 4094)",
+    "Un trunk transporte tous les VLANs sur un seul câble",
+    "Sépare Compta et Marketing sans câblage sépare"
+   ],
+   "tip": "Deux PC sur le même switch mais dans deux VLANs différents ne se voient pas. Pour les faire communiquer, il faut un routeur ou un SVI (couche 3).",
+   "accept": [
+    "vlan",
+    "virtual lan",
+    "virtual lan tagging",
+    "802.1q"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "trame_ethernet_vlan",
+    "vlan_isolation_switch",
+    "vlan_trunk_autorisation",
+    "capture_cli_show_vlan_brief"
+   ]
+  },
+  {
+   "id": "stp",
+   "acronyme": "STP / RSTP",
+   "nom_complet": "Spanning Tree Protocol (IEEE 802.1D)",
+   "couche": "2",
+   "role": "Le garde-fou anti-boucle : éteint virtuellement certains liens entre switchs pour éviter que les trames tournent en rond et saturent le réseau.",
+   "ports": null,
+   "faits_cles": [
+    "Échange des BPDU (Bridge Protocol Data Unit) entre switchs",
+    "Élit un root bridge",
+    "RSTP (802.1w) = version rapide",
+    "Une boucle L2 sans STP = tempête de broadcast qui effondre le réseau"
+   ],
+   "tip": "Branche deux switchs par deux câbles sans STP : les broadcasts tournent en boucle et le réseau s'ecroule en quelques secondes. STP coupe un lien pour l'éviter.",
+   "accept": [
+    "stp",
+    "rstp",
+    "spanning tree protocol",
+    "rapid spanning tree protocol"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "capture_simulation_stp_packet_tracer"
+   ]
+  },
+  {
+   "id": "ppp",
+   "acronyme": "PPP",
+   "nom_complet": "Point-to-Point Protocol",
+   "couche": "2",
+   "role": "Établit une liaison directe entre deux points (souvent en WAN) et vérifie l'identité de celui qui se connecte.",
+   "ports": null,
+   "faits_cles": [
+    "Liaisons WAN point à point",
+    "Authentification via PAP ou CHAP",
+    "Base de PPPoE (la box chez l'opérateur)"
+   ],
+   "tip": "PPP tout seul, 'protocole point à point', ne dit rien. Le crochet : c'est par lui que ta box s'authentifie chez ton opérateur (via PPPoE, PPP over Ethernet), avec un mot de passe protégé par CHAP.",
+   "accept": [
+    "point to point protocol",
+    "ppp"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "ppp_dans_ethernet"
+   ]
+  },
+  {
+   "id": "mpls",
+   "acronyme": "MPLS",
+   "nom_complet": "Multi-Protocol Label Switching",
+   "couche": "2 (dite 2,5)",
+   "role": "Achemine les données d'après un court marqueur ajouté à l'entrée du réseau opérateur, plutôt que par lecture complète de l'adresse IP à chaque saut. Utilisé par les opérateurs pour aller vite.",
+   "ports": null,
+   "faits_cles": [
+    "Dite 'couche 2,5' (entre liaison et réseau)",
+    "Routage par label, sans relire toute l'IP à chaque saut",
+    "Cœur des réseaux d'opérateurs"
+   ],
+   "tip": "MPLS colle une étiquette au paquet à l'entree du réseau opérateur, et les routeurs suivent l'étiquette sans réanalyser l'IP à chaque saut. Plus rapide, d'où l'usage télécom.",
+   "accept": [
+    "mpls",
+    "multi protocol label switching"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "topologie_mpls_pe_ce"
+   ]
+  },
+  {
+   "id": "csmacd",
+   "acronyme": "CSMA/CD",
+   "nom_complet": "Carrier Sense Multiple Access with Collision Detection",
+   "couche": "2",
+   "role": "L'ancienne méthode d'accès de l'Ethernet filaire partage : ecoute le câble et détecte les collisions quand deux machines parlent en même temps.",
+   "ports": null,
+   "faits_cles": [
+    "Ethernet filaire d'antan (hubs, half-duplex)",
+    "Détecte les collisions (contrairement au Wi-Fi qui les évite)",
+    "Quasi disparu avec les switchs full-duplex"
+   ],
+   "tip": "CSMA/CD suppose un câble partage ou deux stations peuvent se télescoper. Avec un switch moderne en full-duplex, chaque port est dédié : plus de collision, donc CSMA/CD ne sert plus.",
+   "accept": [
+    "carrier sense multiple access with collision detection",
+    "cd",
+    "csma",
+    "csma cd"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "csma_cd_ecoute_support",
+    "csma_cd_collision"
+   ]
+  },
+  {
+   "id": "pppoe",
+   "acronyme": "PPPoE",
+   "nom_complet": "PPP over Ethernet",
+   "couche": "2",
+   "role": "C'est par ce protocole que ta box s'authentifie auprès de ton opérateur, avec identifiant et mot de passe, pour ouvrir l'accès à Internet.",
+   "ports": null,
+   "faits_cles": [
+    "PPP transporte sur Ethernet",
+    "Utilise pour l'authentification DSL/fibre chez l'opérateur",
+    "S'appuie sur PAP ou CHAP pour le mot de passe"
+   ],
+   "tip": "Au démarrage de ta box, la phase ou elle 'se connecte' à l'opérateur avec identifiant et mot de passe, c'est PPPoE qui négocie, souvent avec CHAP.",
+   "accept": [
+    "ppp over ethernet",
+    "pppoe"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "ppp_dans_ethernet"
+   ]
+  },
+  {
+   "id": "l2tp",
+   "acronyme": "L2TP",
+   "nom_complet": "Layer 2 Tunneling Protocol",
+   "couche": "2",
+   "role": "Crée un tunnel qui fait croire à deux réseaux distants qu'ils sont branches sur le même switch, en passant par Internet. Sert de base aux VPN.",
+   "ports": "1701 (UDP)",
+   "faits_cles": [
+    "Tunnel de couche 2 à travers un réseau IP",
+    "Ne chiffre pas seul : presque toujours couple a IPsec (L2TP/IPsec)",
+    "Usage VPN d'accès distant"
+   ],
+   "tip": "L2TP tout seul monte le tuyau mais ne le protege pas. C'est pour ça qu'on le voit quasi toujours ecrit 'L2TP/IPsec (Internet Protocol Security)' : IPsec (couche 3) apporte le chiffrement qui manque.",
+   "accept": [
+    "l2tp",
+    "layer 2 tunneling protocol"
+   ],
+   "port_clair": [
+    "1701"
+   ],
+   "port_tls": [],
+   "images": [
+    "millefeuille_encapsulation_vpn"
+   ]
+  },
+  {
+   "id": "port_security",
+   "acronyme": "Port-Security",
+   "nom_complet": "Port Security (securite de port sur switch)",
+   "couche": "2",
+   "role": "Le videur de port : le switch mémorise la MAC autorisée sur un port et bloque la prise si une autre machine s'y branche.",
+   "ports": null,
+   "faits_cles": [
+    "Fonction de sécurité du switch (cote Cisco notamment)",
+    "Limite le nombre ou fixe la MAC autorisée par port",
+    "Réaction possible : shutdown du port, restrict, protect"
+   ],
+   "tip": "Quelqu'un débranche un PC et branche son propre portable sur la même prise : avec Port-Security, le switch voit une MAC inconnue et coupe le port. Contre-mesure directe au MAC spoofing physique.",
+   "accept": [
+    "port security",
+    "port security securite de port sur switch"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "port_security"
+   ]
+  },
+  {
+   "id": "span",
+   "acronyme": "SPAN / Mirroring",
+   "nom_complet": "Switched Port Analyzer (port mirroring)",
+   "couche": "2",
+   "role": "La caméra de surveillance du switch : copie tout le trafic d'un port vers un autre port pour l'analyser, sans couper la communication.",
+   "ports": null,
+   "faits_cles": [
+    "Recopie le trafic vers un port d'analyse",
+    "Sert à brancher un analyseur type Wireshark",
+    "Légitime (diagnostic) mais aussi utilisable pour espionner"
+   ],
+   "tip": "Pour capturer le trafic d'un serveur avec Wireshark sans le débrancher, on configure un SPAN sur le switch : le port du serveur est duplique vers le port du PC d'analyse.",
+   "accept": [
+    "mirroring",
+    "span",
+    "span mirroring",
+    "switched port analyzer",
+    "switched port analyzer port mirroring"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "span_mirroring"
+   ]
+  },
+  {
+   "id": "arp_spoofing",
+   "acronyme": "ARP Spoofing",
+   "nom_complet": "ARP Spoofing (empoisonnement de cache ARP)",
+   "couche": "2",
+   "type": "attaque",
+   "role": "Usurpation dans l'annuaire ARP : le pirate ment en répondant 'l'IP de la passerelle, c'est MA MAC', et intercepte ainsi tout le trafic (attaque de l'homme du milieu).",
+   "ports": null,
+   "faits_cles": [
+    "Exploite qu'ARP n'a aucune authentification",
+    "Permet une position Man-in-the-Middle sur le LAN",
+    "Contre-mesures : Dynamic ARP Inspection, entrées ARP statiques"
+   ],
+   "tip": "Sur un LAN, un attaquant répond en boucle 'la passerelle 192.168.1.1 = ma MAC'. Ton PC met à jour son cache ARP et t'envoie tout ton trafic. Il lit et fait suivre : tu ne vois rien, lui voit tout.",
+   "accept": [
+    "arp",
+    "arp spoofing",
+    "arp spoofing empoisonnement de cache arp",
+    "spoofing"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "arp_spoof_attaque_protection"
+   ]
+  },
+  {
+   "id": "mac_flooding",
+   "acronyme": "MAC Flooding",
+   "nom_complet": "MAC Flooding (saturation de table CAM)",
+   "couche": "2",
+   "type": "attaque",
+   "role": "Sabotage par saturation : on bombarde le switch de milliers de fausses MAC jusqu'à saturer sa table CAM (Content Addressable Memory). Débordé, il se met à diffuser tout à tout le monde.",
+   "ports": null,
+   "faits_cles": [
+    "Sature la table CAM (mémoire MAC vers port) du switch",
+    "Le switch dégrade en mode 'hub' et diffuse partout",
+    "Permet ensuite d'écouter le trafic des autres",
+    "Contre-mesure : Port-Security"
+   ],
+   "tip": "Une fois la table CAM (Content Addressable Memory) pleine, le switch ne sait plus qui est où : il renvoie chaque trame sur tous les ports. L'attaquant reçoit alors le trafic destiné aux autres. Port-Security bloque justement ça.",
+   "accept": [
+    "flooding",
+    "mac",
+    "mac flooding",
+    "mac flooding saturation de table cam"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "attaque_ethernet_vlan_attaque_mac_flooding"
+   ]
+  },
+  {
+   "id": "cuivre",
+   "acronyme": "Cuivre / RJ45",
+   "nom_complet": "Cable cuivre a paires torsadees",
+   "couche": "1",
+   "role": "Transporte les bits sous forme de signal électrique (variations de tension) sur des paires de fils torsadées.",
+   "ports": null,
+   "faits_cles": [
+    "Connecteur RJ45",
+    "Catégories Cat5e / Cat6 / Cat6a",
+    "De 100 Mbps a 10 Gbps selon catégorie et distance",
+    "Paires torsadées pour limiter les interférences"
+   ],
+   "tip": "Les paires sont torsadées exprès : ça annule les parasites électromagnétiques. Un câble détorsadé sur de la longueur collecte du bruit et fait des erreurs.",
+   "accept": [
+    "cuivre",
+    "rj45"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "cable_paires_torsadees"
+   ]
+  },
+  {
+   "id": "fibre",
+   "acronyme": "Fibre optique",
+   "nom_complet": "Fibre optique",
+   "couche": "1",
+   "role": "Transporte les bits sous forme de signal lumineux (photons), insensible aux interférences électromagnétiques et taillée pour le très haut débit.",
+   "ports": null,
+   "faits_cles": [
+    "Monomode (longue distance) / multimode (courte distance)",
+    "Connecteurs LC, SC",
+    "Immunisée aux interférences électriques",
+    "Très haut débit, longues distances"
+   ],
+   "tip": "La fibre ne capte pas les parasites électriques (c'est de la lumière, pas du courant). D'où son usage sur longues distances ou en milieu perturbé.",
+   "accept": [
+    "fibre",
+    "fibre optique",
+    "optique"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "fibre_optique"
+   ]
+  },
+  {
+   "id": "wifi_c1",
+   "acronyme": "Wi-Fi (signal)",
+   "nom_complet": "Signal radio 802.11",
+   "couche": "1",
+   "role": "Transporte les bits sous forme d'ondes radio, sans support physique, ce qui le rend pratique mais plus vulnérable.",
+   "ports": null,
+   "faits_cles": [
+    "Bandes 2.4 GHz (portee) et 5 GHz (débit)",
+    "Sensible aux obstacles et aux interférences",
+    "Ecoutable sans branchement (donc à chiffrer, WPA, Wi-Fi Protected Access)",
+    "La logique d'accès CSMA/CA est en couche 2"
+   ],
+   "tip": "Un signal Wi-Fi traverse les murs, donc il sort de chez toi : n'importe qui à portée peut le capter sans se brancher. D'où le chiffrement WPA2/WPA3, indispensable.",
+   "accept": [
+    "wifi",
+    "wi fi",
+    "802.11"
+   ],
+   "port_clair": [],
+   "port_tls": []
+  },
+  {
+   "id": "codage",
+   "acronyme": "Codage signal",
+   "nom_complet": "Codage en ligne (NRZ, Manchester, 4B/5B)",
+   "couche": "1",
+   "role": "Définit comment un bit (0 ou 1) devient concrètement un état du signal, et garde l'horloge de l'émetteur et du récepteur synchronisée.",
+   "ports": null,
+   "faits_cles": [
+    "NRZ, Manchester, 4B/5B",
+    "Assure la synchronisation d'horloge émetteur/récepteur",
+    "Le codage est public et connu (conséquence cyber)"
+   ],
+   "tip": "Le codage (NRZ, Manchester) étant connu de tous, qui capte le signal physique brut peut reconstruire les bits sans aucun mot de passe. C'est la base des attaques couche 1 type TEMPEST.",
+   "accept": [
+    "codage",
+    "codage en ligne",
+    "codage en ligne nrz manchester 4b 5b",
+    "codage signal",
+    "signal"
+   ],
+   "port_clair": [],
+   "port_tls": [],
+   "images": [
+    "nrz_l_signal",
+    "nrz_l_probleme_zeros",
+    "manchester_codage",
+    "mlt3_signal",
+    "mlt3_probleme_zeros"
+   ]
   }
-  el("win").style.display="block";
-  const q=pool[idx];
-  el("qcat").firstChild.textContent=q.cat+" ";
-  el("qdot").className="dot "+q.color;
-  el("qdot").style.background = q.color==="vert" ? "" : dotColor(q.color);
-  const mode=el("mode").value;
-  const qimg=el("qimg");
-  if((mode==="full"||mode==="mask") && q.img){
-    const src = mode==="mask"?imgMask(q):imgFull(q);
-    qimg.innerHTML=`<img src="${src}" alt="panneau" onclick="openLightbox(this.src)" onerror="this.parentNode.style.display='none'">`;
-    qimg.style.display="block";
-  } else {
-    qimg.innerHTML=""; qimg.style.display="none";
-  }
-  if(mode==="text"||mode==="fr"){
-    el("need").textContent=q.need;
-  } else {
-    el("need").textContent = mode==="mask"
-      ? "Quel panneau ? Retrouve son nom (a la correction) et tape la commande."
-      : "Quelle commande ouvre ce panneau ?";
-  }
-  if(mode==="fr"){
-    el("winLabel").textContent="Nom en francais";
-    el("win").placeholder="le nom de l'outil, en francais";
-  } else {
-    el("winLabel").textContent="Windows";
-    el("win").placeholder="ta commande Windows";
-  }
-  if(!linuxOn() || mode==="fr"){
-    el("linuxField").style.display="none";
-  }else if(q.linux && q.linux.none){
-    el("linuxField").style.display="block";
-    el("lin").disabled=true; el("lin").value=""; el("lin").placeholder="aucun equivalent CLI (panneau graphique)";
-  }else{
-    el("linuxField").style.display="block";
-    el("lin").disabled=false; el("lin").placeholder="ta commande Linux";
-  }
-  el("win").focus();
-  updateScore();
-}
-function updateScore(){el("score").textContent=`${correct} / ${done}`;}
-
-// Variantes acceptees pour le nom francais : le nom complet, le nom sans
-// sa parenthese, et le contenu de la parenthese seul.
-// Mode FR : on compare des NOMS francais, pas des commandes. On tolere donc
-// tout ce qui ne change pas le sens : accents, apostrophes, traits d'union,
-// singulier/pluriel, et les petits mots de liaison (de, des, la, les...).
-const FR_STOP = ["de","des","du","d","la","le","les","l","un","une","et","a","au","aux","en"];
-function frCanon(s){
-  return norm(s)
-    .replace(/['\u2019\u2010-\u2015-]/g," ")   // apostrophes et traits d'union -> espace
-    .replace(/[()]/g," ")
-    .replace(/[^a-z0-9 ]/g," ")
-    .split(/\s+/)
-    .filter(w => w && FR_STOP.indexOf(w) < 0)
-    .map(w => w.length > 3 ? w.replace(/[sx]$/,"") : w)  // singulier = pluriel
-    .join(" ")
-    .trim();
-}
-// Variantes acceptees : le nom complet, le nom sans sa parenthese, et le
-// contenu de la parenthese seul.
-// Quelques panneaux ont un raccourci courant sans ambiguite sous Windows.
-const FR_EXTRA = {
-  "Pare-feu Windows Defender (règles avancées)":
-    ["pare-feu","pare-feu windows","windows firewall","pare-feu windows defender"],
-  // Windows nomme l'un « Assistance a distance Windows » et l'autre
-  // « Connexion Bureau a distance » : le mot Windows est donc optionnel.
-  "Assistance à distance Windows":
-    ["assistance à distance"],
-  "Connexion Bureau a distance":
-    ["connexion bureau à distance windows","bureau à distance","bureau à distance windows"]
+ ],
+ "references": {
+  "ports_reserves": "0-1023 : 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 67/68 DHCP, 80 HTTP, 110 POP3, 123 NTP, 143 IMAP, 161 SNMP, 443 HTTPS, 445 SMB, 3389 RDP",
+  "rfc_1918_privees": "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
+  "adresses_speciales": "127.0.0.1 loopback, 169.254.x.x APIPA, 255.255.255.255 broadcast",
+  "ethertype": "0x0800 IPv4, 0x86DD IPv6, 0x0806 ARP, 0x8100 VLAN",
+  "mac": "48 bits = OUI (fabricant) + NIC (carte)",
+  "encapsulation": "C7-5 Données > C4 Segment/Datagramme > C3 Paquet > C2 Trame > C1 Bit",
+  "tcpip_vs_osi": "Application (C5-6-7 fusionnées), Transport (C4), Internet (C3), Accès réseau (C1-2)"
+ }
 };
-function frAccept(q){
-  const acc=[q.name].concat(FR_EXTRA[q.name]||[]);
-  const m=q.name.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
-  if(m){ acc.push(m[1]); acc.push(m[2]); }
-  return acc;
-}
-function frMatch(input, q){
-  const c = frCanon(input);
-  if(!c) return false;
-  return frAccept(q).some(a => frCanon(a) === c);
-}
 
-function check(){
-  if(answered) return;
-  const q=pool[idx];
-  const frMode = el("mode").value==="fr";
-  const winOk = frMode ? frMatch(el("win").value, q)
-                       : matchAny(el("win").value, q.win);
-  let linOk=true;
-  const linActive = !frMode && q.linux && !q.linux.none && linuxOn();
-  if(linActive){
-    linOk = matchAny(el("lin").value, q.linux.acc);
+const IMG_META = {"cache_dns_ttl_routeur": {"t": "Le cache DNS et son TTL sur le routeur", "e": "Montre comment une réponse DNS est mémorisée un temps limité (le TTL) sur le routeur ou le poste, pour éviter de reposer la même question à chaque fois."}, "resolution_dns_hierarchie_complete": {"t": "La hiérarchie complète d'une résolution DNS", "e": "Suit le trajet d'une requête DNS à travers les serveurs racine, puis les serveurs de domaine, jusqu'au serveur qui connaît la réponse finale."}, "resolution_dns_relai_routeur": {"t": "Résolution DNS relayée par le routeur", "e": "Montre comment le routeur local relaie la requête DNS du poste client vers le serveur DNS configuré, sans que le poste ne parle directement à Internet."}, "tableau_types_enregistrements_dns": {"t": "Tableau des types d'enregistrements DNS", "e": "Récapitule les principaux types d'enregistrements DNS (A, AAAA, CNAME, MX, etc.) et ce que chacun sert à faire."}, "dns_tcp_udp_transfert_zone": {"t": "DNS en UDP ou en TCP selon le cas", "e": "Montre pourquoi une requête DNS classique passe en UDP, mais bascule en TCP pour les grosses réponses ou les transferts de zone entre serveurs DNS."}, "dhcp_phase1_discover": {"t": "Phase 1 DHCP : le Discover", "e": "Le poste qui vient d'arriver sur le réseau envoie en broadcast une demande d'adresse IP, puisqu'il n'en a pas encore."}, "dhcp_phase2_offer": {"t": "Phase 2 DHCP : l'Offer", "e": "Le serveur DHCP répond en proposant une adresse IP disponible avec les autres paramètres réseau."}, "dhcp_phase3_4_request_ack": {"t": "Phases 3 et 4 DHCP : Request et Ack", "e": "Le poste confirme qu'il accepte l'offre (Request), puis le serveur valide définitivement l'attribution (Ack)."}, "dhcp_recapitulatif_5_phases": {"t": "Récapitulatif des phases DHCP", "e": "Vue d'ensemble de la séquence DORA (Discover, Offer, Request, Ack) et de l'étape supplémentaire qui l'accompagne."}, "dhcp_agent_relai_multi_reseaux": {"t": "Agent relais DHCP entre plusieurs réseaux", "e": "Montre comment un agent relais transmet les requêtes DHCP d'un client vers un serveur DHCP situé sur un autre sous-réseau."}, "tunnel_ssh_cntlm_proxy": {"t": "Tunnel SSH à travers un proxy CNTLM", "e": "Montre comment faire passer une connexion SSH à travers un proxy d'entreprise authentifié, via l'outil CNTLM."}, "tunnel_ssh_redirection_port": {"t": "Redirection de port via un tunnel SSH", "e": "Montre comment SSH peut rediriger un port local vers une machine distante, pour accéder à un service qui ne serait pas directement joignable."}, "principe_serveur_proxy": {"t": "Principe de fonctionnement d'un serveur proxy", "e": "Montre comment le proxy s'intercale entre le client et Internet, en relayant les requêtes à sa place."}, "proxy_decapsulation_reencapsulation": {"t": "Décapsulation et réencapsulation par le proxy", "e": "Montre que le proxy ouvre la requête du client pour l'analyser au niveau applicatif, avant de la renvoyer vers sa destination."}, "proxy_dmz_pare_feu": {"t": "Position du proxy en DMZ, derrière le pare-feu", "e": "Montre où se place typiquement un proxy dans l'architecture réseau, en zone démilitarisée entre le réseau interne et Internet."}, "tableau_champs_segment_tcp": {"t": "Tableau des champs d'un segment TCP", "e": "Détaille la structure d'un segment TCP : ports, numéros de séquence et d'accusé de réception, drapeaux, fenêtre, etc."}, "fenetre_glissante_tcp": {"t": "Principe de la fenêtre glissante TCP", "e": "Montre comment TCP ajuste la quantité de données envoyées sans attendre un accusé de réception à chaque paquet, pour aller plus vite."}, "fermeture_connexion_tcp": {"t": "Fermeture d'une connexion TCP", "e": "Montre l'échange de drapeaux FIN et ACK qui termine proprement une connexion TCP des deux côtés."}, "principe_checksum_transmission_reception": {"t": "Principe du checksum, à l'émission et à la réception", "e": "Montre comment un checksum calculé à l'envoi permet au destinataire de détecter si les données ont été corrompues en chemin."}, "progression_fenetre_glissante_tcp": {"t": "Progression de la fenêtre glissante TCP dans le temps", "e": "Montre comment la taille de la fenêtre TCP évolue au fil des échanges entre les deux machines."}, "retransmission_rapide_tcp_ack_duplique": {"t": "Retransmission rapide TCP après un ACK dupliqué", "e": "Montre comment TCP détecte une perte de paquet grâce à des accusés de réception dupliqués, et retransmet sans attendre le délai normal."}, "three_way_handshake_tcp": {"t": "La poignée de main en trois temps TCP", "e": "Montre l'échange SYN, SYN-ACK, ACK qui établit une connexion TCP avant tout échange de données."}, "exemple_port_source_destination_http": {"t": "Exemple de ports source et destination pour HTTP", "e": "Montre comment un port source aléatoire côté client dialogue avec le port 80 du serveur HTTP."}, "tableau_champs_port_source_destination": {"t": "Tableau des champs port source et port destination", "e": "Détaille où se trouvent les champs port source et port destination dans l'en-tête TCP ou UDP, et à quoi ils servent."}, "decoupage_message_en_pdu": {"t": "Découpage d'un message en PDU à chaque couche", "e": "Montre comment un message applicatif est découpé et encapsulé en unités de données différentes à chaque couche : segment, paquet, trame."}, "structure_datagramme_udp": {"t": "Structure d'un datagramme UDP", "e": "Détaille les champs d'un en-tête UDP, beaucoup plus court que celui de TCP puisqu'il n'y a ni connexion ni accusé de réception."}, "nat_reecriture_source_ping": {"t": "Réécriture de l'adresse source par le NAT sur un ping", "e": "Montre comment le routeur remplace l'adresse IP privée source par son adresse publique lorsqu'un paquet sort vers Internet."}, "paquet_ipv4": {"t": "Structure d'un paquet IPv4", "e": "Détaille les champs de l'en-tête IPv4 : adresses source et destination, TTL, protocole transporté, etc."}, "calcul_ihl_options_bourrage_ipv4": {"t": "Calcul de l'IHL, options et bourrage en IPv4", "e": "Montre comment la longueur de l'en-tête IPv4 (IHL) varie selon la présence d'options, complétées par du bourrage pour rester alignée."}, "fragmentation_ip_tableau_fragments_ipv4": {"t": "Fragmentation IPv4 en plusieurs fragments", "e": "Montre comment un paquet IPv4 trop gros pour un lien est découpé en plusieurs fragments, réassemblés à l'arrivée."}, "paquet_ipv6": {"t": "Structure d'un paquet IPv6", "e": "Détaille l'en-tête IPv6, plus simple que celui d'IPv4, avec ses adresses sur 128 bits."}, "en_tete_extension_fragment_ipv6": {"t": "En-tête d'extension de fragmentation en IPv6", "e": "Montre comment IPv6 gère la fragmentation via un en-tête d'extension séparé, contrairement à IPv4 qui l'intègre directement."}, "structure_paquet_icmp": {"t": "Structure d'un paquet ICMP", "e": "Détaille les champs d'un message ICMP : type, code, et les informations qui varient selon qu'il s'agit d'un ping ou d'un signalement d'erreur."}, "ttl_expire_icmp_type_11": {"t": "TTL expiré, message ICMP type 11", "e": "Montre le message ICMP envoyé par un routeur quand le TTL d'un paquet tombe à zéro, mécanisme qui fait fonctionner traceroute."}, "comparatif_ripv1_ripv2": {"t": "Comparatif entre RIPv1 et RIPv2", "e": "Montre les différences entre les deux versions de RIP, notamment la prise en charge des masques de sous-réseau par RIPv2."}, "comparatif_ripv1_ripv2_ospf_bgp": {"t": "Comparatif RIP, OSPF et BGP", "e": "Compare les grandes familles de protocoles de routage entre elles : simplicité de RIP, efficacité d'OSPF, et rôle de BGP entre opérateurs."}, "ospf_areas_abr_asbr": {"t": "Découpage OSPF en areas, avec ABR et ASBR", "e": "Montre comment OSPF divise un réseau en zones (areas), reliées par des routeurs de bordure ABR et ASBR."}, "ospf_cout_liens_bande_passante": {"t": "Coût des liens OSPF selon la bande passante", "e": "Montre comment OSPF calcule un coût pour chaque lien en fonction de sa bande passante, pour choisir la route la plus rapide."}, "graphe_pondere_plus_court_chemin": {"t": "Graphe pondéré et calcul du plus court chemin", "e": "Illustre le principe de l'algorithme utilisé par OSPF (Dijkstra) pour trouver le chemin le moins coûteux dans un réseau représenté en graphe."}, "chemins_multiples_vers_destination": {"t": "Chemins multiples possibles vers une même destination", "e": "Montre une situation où plusieurs routes existent vers la même destination, et comment le protocole de routage choisit entre elles."}, "bgp_entre_systemes_autonomes": {"t": "BGP entre systèmes autonomes", "e": "Montre comment BGP relie différents systèmes autonomes, des réseaux d'opérateurs distincts, pour faire fonctionner Internet à grande échelle."}, "decision_consultation_table_routage": {"t": "Décision de consultation de la table de routage", "e": "Montre le raisonnement qu'un équipement suit pour décider s'il route un paquet localement ou via sa table de routage."}, "millefeuille_encapsulation_vpn": {"t": "Le millefeuille d'encapsulation d'un VPN", "e": "Montre les différentes couches d'encapsulation empilées dans un tunnel VPN : Ethernet, IP, UDP, L2TP, PPP, IPsec, ICMP."}, "switch_reseau_local": {"t": "Un switch dans un réseau local", "e": "Montre le rôle du switch qui relie les machines d'un réseau local et fait circuler les trames entre les bons ports."}, "trame_ethernet": {"t": "Structure d'une trame Ethernet", "e": "Détaille les champs d'une trame Ethernet : adresses MAC source et destination, EtherType, données, et contrôle d'intégrité FCS."}, "decision_meme_reseau_ou_passerelle": {"t": "Même réseau ou passage par la passerelle", "e": "Montre comment une machine décide si elle peut joindre directement une autre machine sur le même réseau local, ou si elle doit passer par sa passerelle."}, "csma_ca_rts_cts_ack": {"t": "Dialogue RTS, CTS, ACK en Wi-Fi (CSMA/CA)", "e": "Montre l'échange de messages qui permet à une machine Wi-Fi de réserver le canal radio avant d'émettre, pour éviter les collisions."}, "trame_ethernet_vlan": {"t": "Trame Ethernet avec étiquette VLAN", "e": "Montre où s'insère le tag VLAN de 4 octets à l'intérieur d'une trame Ethernet classique."}, "vlan_isolation_switch": {"t": "Isolation entre VLANs sur un même switch", "e": "Montre comment deux VLANs différents sur le même switch ne peuvent pas communiquer entre eux sans routage."}, "vlan_trunk_autorisation": {"t": "Trunk VLAN et VLANs autorisés", "e": "Montre comment un lien trunk entre deux switchs transporte plusieurs VLANs, avec une liste de VLANs autorisés à y circuler."}, "capture_cli_show_vlan_brief": {"t": "Capture de la commande show vlan brief", "e": "Montre le résultat de la commande Cisco qui liste les VLANs configurés sur un switch et les ports qui leur sont assignés."}, "capture_simulation_stp_packet_tracer": {"t": "Simulation STP dans Packet Tracer", "e": "Montre un exemple de fonctionnement du Spanning Tree Protocol simulé dans Packet Tracer, avec un lien bloqué pour éviter une boucle."}, "ppp_dans_ethernet": {"t": "PPP encapsulé dans Ethernet (PPPoE)", "e": "Montre comment le protocole PPP, prévu pour des liaisons point à point, est transporté à l'intérieur de trames Ethernet chez l'abonné."}, "topologie_mpls_pe_ce": {"t": "Topologie MPLS avec routeurs PE et CE", "e": "Montre la position des routeurs PE, en bordure du réseau opérateur, et CE, chez le client, dans une architecture MPLS."}, "csma_cd_ecoute_support": {"t": "Écoute du support avant émission en CSMA/CD", "e": "Montre comment une machine sur un réseau Ethernet partagé écoute le câble avant d'émettre, pour vérifier qu'il est libre."}, "csma_cd_collision": {"t": "Collision détectée en CSMA/CD", "e": "Montre ce qui se passe quand deux machines émettent en même temps sur un câble partagé, et comment la collision est détectée."}, "cable_paires_torsadees": {"t": "Câble cuivre à paires torsadées", "e": "Montre la structure d'un câble RJ45 avec ses paires torsadées, qui limitent les interférences électromagnétiques."}, "nrz_l_signal": {"t": "Signal codé en NRZ-L", "e": "Montre comment les bits 0 et 1 sont représentés par deux niveaux de tension distincts dans le codage NRZ-L."}, "nrz_l_probleme_zeros": {"t": "Le problème des zéros en NRZ-L", "e": "Montre pourquoi une longue suite de zéros pose un problème de synchronisation d'horloge avec le codage NRZ-L."}, "manchester_codage": {"t": "Le codage Manchester", "e": "Montre comment le codage Manchester encode chaque bit par une transition de signal au milieu du temps bit, ce qui résout le problème de synchronisation du NRZ-L."}, "mlt3_signal": {"t": "Signal codé en MLT-3", "e": "Montre le codage MLT-3, qui utilise trois niveaux de tension pour réduire les interférences à haut débit."}, "mlt3_probleme_zeros": {"t": "Le problème des zéros en MLT-3", "e": "Montre comment MLT-3 gère les longues suites de zéros différemment du NRZ-L, sans perdre la synchronisation."}, "http": {"t": "Le protocole HTTP en cinq etapes", "e": "Le navigateur envoie une requete HTTP, le serveur la traite, localise le fichier, construit les en-tetes, puis renvoie la reponse."}, "https": {"t": "HTTPS : etablissement d'une session chiffree", "e": "Apres la connexion TCP, le serveur envoie sa cle publique, le client transmet une cle de session, et les donnees circulent ensuite chiffrees."}, "smtp_imap_pop3": {"t": "SMTP, IMAP et POP3 : le circuit d'un e-mail", "e": "SMTP achemine le message du client vers les serveurs de messagerie, puis le destinataire le recupere en POP3 (telechargement) ou en IMAP (le mail reste sur le serveur)."}, "ftp": {"t": "FTP en mode actif : deux canaux separes", "e": "Le canal de controle sur le port 21 porte l'authentification et les commandes, le canal de donnees sur le port 20 porte les fichiers. Tout circule en clair."}, "ftps": {"t": "FTPS : les memes canaux, mais chiffres", "e": "Meme structure que FTP avec ses deux canaux, sauf que l'ensemble du flux est enveloppe dans une couche de chiffrement TLS."}, "sftp": {"t": "SFTP : tout dans un seul tunnel SSH", "e": "Contrairement a FTP, il n'y a qu'un seul canal et un seul port, le 22, entierement chiffre par SSH. Ce n'est pas du FTP securise, c'est un transfert sur SSH."}, "telnet": {"t": "Telnet : un terminal distant en clair", "e": "Les frappes clavier du client sont envoyees au serveur, qui renvoie l'affichage. Rien n'est chiffre, d'ou son remplacement par SSH."}, "snmp": {"t": "SNMP : le manager et ses agents", "e": "Le manager SNMP interroge a travers le reseau les agents installes sur les equipements supervises : imprimantes, serveurs, routeurs, pare-feu."}, "ntp": {"t": "NTP : synchronisation de l'heure sur le reseau", "e": "Les equipements interrogent un serveur NTP pour aligner leur horloge sur une reference commune, indispensable pour l'horodatage des journaux."}, "netbios_over_tcpip": {"t": "Resolution d'un nom NetBIOS", "e": "Montre l'ordre dans lequel un poste cherche a traduire un nom NetBIOS en adresse IP : cache local, serveur WINS, broadcast, puis fichier lmhosts."}, "rpc": {"t": "RPC : appeler une fonction sur une machine distante", "e": "Le code client appelle une fonction en apparence locale ; un stub de la librairie RPC emballe l'appel, l'envoie au serveur qui l'execute et renvoie le resultat."}, "nfs": {"t": "NFS : partage de fichiers cote Unix et Linux", "e": "Le client NFS, integre au noyau, fait passer les acces fichiers par TCP/UDP jusqu'au serveur NFS distant, comme s'ils etaient sur le disque local."}, "schema_reseau_pat": {"t": "PAT : plusieurs machines derriere une seule IP publique", "e": "Le routeur distingue les connexions grace a une table de traduction qui associe chaque machine interne a un numero de port different sur la meme adresse publique."}, "nat_01": {"t": "NAT : le paquet sortant vers Internet", "e": "Le routeur remplace l'adresse IP privee de l'ordinateur par son adresse IP publique, si bien que le serveur web voit uniquement l'adresse publique."}, "nat_02": {"t": "NAT : la reponse qui revient vers le bon poste", "e": "Le serveur repond a l'adresse publique, et le routeur retrouve grace a sa table quel ordinateur du reseau local doit recevoir le paquet."}, "nat_dynamique": {"t": "NAT dynamique : un pool d'adresses publiques", "e": "Le routeur puise dans une reserve de plusieurs adresses IP publiques et en attribue une differente a chaque machine interne qui sort."}, "schema_reseau_redirection_port": {"t": "Redirection de port : entrer depuis Internet", "e": "Une regle sur la box fait suivre les connexions arrivant sur un port public vers une machine precise du reseau local, ici un NAS."}, "ndp": {"t": "NDP : le remplacant d'ARP en IPv6", "e": "Deux messages ICMPv6 : le Neighbor Solicitation (type 135) demande a qui appartient une adresse, le Neighbor Advertisement (type 136) fournit la reponse."}, "ip_spoofing": {"t": "IP Spoofing : falsifier l'adresse source", "e": "L'attaquant envoie un paquet en inscrivant l'adresse IP d'une victime comme source, si bien que le serveur repond a cette victime qui n'a rien demande."}, "bgp_hijacking": {"t": "BGP Hijacking : detourner un prefixe", "e": "L'AS attaquant annonce un prefixe plus specifique (3.3.3.0/24) que celui de la victime (3.3.0.0/16) ; comme le prefixe le plus precis l'emporte, le trafic est detourne vers lui."}, "port_security": {"t": "Port-Security : filtrer par adresse MAC", "e": "Le switch n'accepte sur chaque port que la ou les adresses MAC autorisees ; toute machine presentant une autre MAC est bloquee."}, "span_mirroring": {"t": "SPAN / Mirroring : recopier le trafic", "e": "Le switch duplique le trafic qui transite sur certains ports et envoie cette copie vers un port dedie, ou est branchee une sonde d'analyse."}, "arp_spoof_attaque_protection": {"t": "ARP Spoofing : se placer en homme du milieu", "e": "Le pirate envoie de fausses reponses ARP pour empoisonner les tables des victimes, qui lui envoient alors leur trafic en croyant parler a la passerelle ou au serveur."}, "attaque_ethernet_vlan_attaque_mac_flooding": {"t": "MAC Flooding : saturer la table du switch", "e": "Le pirate inonde le switch de fausses adresses MAC jusqu'a saturer sa memoire de correspondances ; le switch degrade alors son comportement et diffuse le trafic a tous."}, "fibre_optique": {"t": "Fibre optique : multimode et monomode", "e": "En multimode, la lumiere rebondit selon plusieurs trajets, ce qui limite la distance ; en monomode, le coeur plus fin ne laisse passer qu'un seul trajet, pour aller beaucoup plus loin."}, "tls_ssl_handshake": {"t": "Le handshake TLS, apres la poignee de main TCP", "e": "Une fois TCP etabli en SYN/SYN-ACK/ACK, le ClientHello et le ServerHello negocient le chiffrement, echangent le certificat et les cles avant tout echange de donnees."}};
+
+const LAYERS={
+  "7":{nom:"Application",v:"var(--c7)"},"6":{nom:"Présentation",v:"var(--c6)"},
+  "5":{nom:"Session",v:"var(--c5)"},"4":{nom:"Transport",v:"var(--c4)"},
+  "3":{nom:"Réseau",v:"var(--c3)"},"2":{nom:"Liaison",v:"var(--c2)"},"1":{nom:"Physique",v:"var(--c1)"}
+};
+function baseLayer(c){ const m=String(c).match(/\d/); return m?m[0]:"?"; }
+function firstFact(p){ return (p.faits_cles&&p.faits_cles[0]) ? p.faits_cles[0] : "pas d'indice pour celle-ci"; }
+
+// --- matching tolérant ---
+function normSpace(s){ s=(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); s=s.replace(/[^a-z0-9]+/g," ").trim(); return s.replace(/\s+/g," "); }
+function despace(s){ return s.replace(/ /g,""); }
+function matchProto(user, accept){
+  const u=normSpace(user); if(!u) return false; const ud=despace(u); const pad=" "+u+" ";
+  for(const f0 of (accept||[])){ const f=normSpace(f0); if(!f) continue;
+    if(pad.includes(" "+f+" ")) return true;
+    if(ud===despace(f)) return true;
   }
-  el("win").className = winOk?"ok":"ko";
-  if(linActive) el("lin").className = linOk?"ok":"ko";
-  const allOk = winOk && linOk;
-  answered=true; done++;
-  if(allOk) correct++; else missed.push(q);
-  showReveal(q, allOk?'ok':'ko');
-  updateScore();
+  return false;
 }
-function reveal(){
-  if(answered) return;
-  const q=pool[idx];
-  answered=true; done++; missed.push(q);
-  showReveal(q,'reveal');
-  updateScore();
+function matchPort(user, nums){ const got=(user.match(/\d+/g)||[]); return got.some(n=>(nums||[]).includes(n)); }
+
+const state={ mode:"role", scope:"all", tls:false, queue:[], i:0, good:0, seen:0, missed:[] };
+let lastFirstKey=null;
+try{ lastFirstKey=localStorage.getItem("osi_lastfirst"); }catch(e){}
+function itemKey(it){ return it.p.id + (it.variant?(":"+it.variant):""); }
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function buildPool(){
+  const portMode = (state.mode==="port"||state.mode==="protobyport");
+  let base=DATA.protocoles.slice();
+  if(state.scope==="attaques") base=base.filter(p=>p.type==="attaque");
+  else { base=base.filter(p=>p.type!=="attaque"); if(state.scope!=="all") base=base.filter(p=>baseLayer(p.couche)===state.scope); }
+  if(!portMode) return base.map(p=>({p,variant:null}));
+  const items=[];
+  for(const p of base){
+    if(p.port_clair && p.port_clair.length) items.push({p,variant:"clair"});
+    if(state.tls && p.port_tls && p.port_tls.length) items.push({p,variant:"tls"});
+  }
+  return items;
 }
-// Les commandes contiennent des chevrons (<ip>, <port>, <service>...) que le
-// navigateur prendrait pour des balises : on les echappe avant affichage.
-const escHtml = t => (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-function showReveal(q, mode){
-  const lin = (q.linux&&q.linux.none)?`<span class="none">aucun (panneau graphique)</span>`:`<code>${escHtml(q.linux.show)}</code>`;
-  const frMode = el("mode").value==="fr";
-  const linLine = (linuxOn() && !frMode)?`<div>Linux : ${lin}</div>`:"";
-  const en = q.en?`<span class="en">${q.en}</span>`:"";
-  const head = mode==='ok'?"Juste.":mode==='reveal'?"Reponse :":"Attendu :";
-  // image complete (avec titre) a la correction, sauf si elle est deja affichee en question
-  const rimg = (q.img && el("mode").value!=="full")
-    ? `<div class="rimg"><img src="${imgFull(q)}" alt="${q.name}" onclick="openLightbox(this.src)" onerror="this.parentNode.style.display='none'"></div>` : "";
-  el("reveal").innerHTML =
-    `<div><b>${head}</b></div>
-     <div class="name">${q.name}${en}</div>
-     <div>${frMode?"Se lance par":"Windows :"} <code>${escHtml(q.winShow)}</code></div>
-     ${linLine}` +
-    (q.tip?`<div class="tip">${q.tip}</div>`:"") + rimg;
-  el("reveal").className="reveal show";
+function buildQueue(){
+  let q=shuffle(buildPool().slice());
+  if(q.length>1 && lastFirstKey && itemKey(q[0])===lastFirstKey){ const k=1+Math.floor(Math.random()*(q.length-1)); [q[0],q[k]]=[q[k],q[0]]; }
+  if(q.length){ lastFirstKey=itemKey(q[0]); try{ localStorage.setItem("osi_lastfirst",lastFirstKey); }catch(e){} }
+  return q;
 }
-function next(){
-  if(idx>=pool.length) return;
-  idx++;
-  if(idx>=pool.length){ el("linuxField").style.display="none"; render(); return; }
-  render();
+function newDeck(){ state.queue=buildQueue(); state.i=0; state.good=0; state.seen=0; state.missed=[]; updateScore(); updateReplay(); showQuestion(); }
+function updateScore(){ document.getElementById("scoreGood").textContent=state.good; document.getElementById("scoreSeen").textContent=state.seen; }
+function updateReplay(){ document.getElementById("replayBtn").disabled = state.missed.length===0; }
+function updateTlsVisibility(){ document.getElementById("tlsWrap").style.visibility=(state.mode==="port"||state.mode==="protobyport")?"visible":"hidden"; }
+function setFill(f){ document.getElementById("fill").style.width=(f*100)+"%"; }
+
+function finalize(correct){ state.seen++; if(correct) state.good++; else state.missed.push(state.queue[state.i]); updateScore(); updateReplay(); }
+function advance(){ state.i++; if(state.i>=state.queue.length){ setFill(1); showEnd(); } else showQuestion(); }
+
+// ---------- QUESTION ----------
+function showQuestion(){
+  if(!state.queue.length){ showEmpty(); return; }
+  const it=state.queue[state.i], p=it.p, L=LAYERS[baseLayer(p.couche)];
+  setFill(state.i/state.queue.length);
+  const auto = state.mode!=="role";
+  let ask, ph, qhtml, hintTxt;
+  const tlschip = it.variant==="tls" ? ' <span class="tlschip">TLS</span>' : "";
+  if(state.mode==="role"){
+    ask="Son rôle ?"; ph="À quoi ça sert, en une phrase...";
+    qhtml=`<div class="proto-big">${p.acronyme}</div><div class="proto-full">${p.nom_complet}</div><div class="cbadge">Couche ${p.couche}</div>`;
+    hintTxt=firstFact(p);
+  } else if(state.mode==="proto"){
+    ask = state.scope==="all" ? "Quel protocole, et quelle couche ?" : "Quel protocole ?";
+    ph  = state.scope==="all" ? "Protocole (+ couche)..." : "Le protocole...";
+    qhtml=`<div class="qrole">${p.role}</div>`;
+    hintTxt = "Couche : "+p.couche;
+  } else if(state.mode==="port"){
+    const enTls = (it.variant==="tls" && p.port_clair.length);
+    ask = enTls ? "Son port en TLS (chiffré) ?" : "Son port ?";
+    ph="Le port...";
+    qhtml=`<div class="proto-big">${p.acronyme}${tlschip}</div><div class="proto-full">${p.nom_complet}</div><div class="cbadge">Couche ${p.couche}</div>`;
+    hintTxt="Couche : "+p.couche;
+  } else { // protobyport
+    ask="Quel protocole ?"; ph="Le protocole...";
+    const shown=(it.variant==="tls"?p.port_tls:p.port_clair).join(", ");
+    qhtml=`<div class="qrole">Port : <span class="ports">${shown}</span>${tlschip}</div>`;
+    hintTxt="Couche : "+p.couche;
+  }
+  document.getElementById("cardHost").innerHTML=`
+    <div class="card" style="--lc:${L.v}">
+      <div class="ask">${ask}</div>
+      <div class="qmain">${qhtml}</div>
+      <div class="answer">
+        <textarea id="ans" placeholder="${ph}" autocomplete="off"></textarea>
+        <div class="hint"><kbd>Ctrl</kbd> + <kbd>Entrée</kbd> pour valider</div>
+        <button class="validate" id="validateBtn">Valider et voir la réponse</button>
+        <button class="dunno" id="dunnoBtn">Je ne sais pas</button>
+        <div class="hintline"><button class="hintbtn" id="hintBtn">Besoin d'un indice ?</button><span class="hintout" id="hintOut"></span></div>
+      </div>
+    </div>`;
+  const ta=document.getElementById("ans"); ta.focus();
+  ta.addEventListener("keydown",ev=>{ if(ev.key==="Enter"&&(ev.ctrlKey||ev.metaKey)){ ev.preventDefault(); submit(); } });
+  document.getElementById("validateBtn").addEventListener("click",submit);
+  document.getElementById("dunnoBtn").addEventListener("click",dunno);
+  document.getElementById("hintBtn").addEventListener("click",e=>{ document.getElementById("hintOut").textContent=hintTxt; e.target.disabled=true; e.target.textContent="Indice :"; });
+}
+function showEmpty(){ document.getElementById("cardHost").innerHTML=`<div class="card"><div class="empty">Aucune carte avec un port dans ce périmètre.<br>Choisis une autre couche, ou « Toutes les couches ».</div></div>`; setFill(0); }
+
+function submit(){
+  const it=state.queue[state.i], p=it.p;
+  const user=(document.getElementById("ans")?.value||"").trim();
+  if(state.mode==="role"){ reveal({auto:false, dunno:false, user}); return; }
+  let correct=false;
+  if(state.mode==="port"){ const nums=it.variant==="tls"?p.port_tls:p.port_clair; correct=matchPort(user,nums); }
+  else { correct=matchProto(user,p.accept); }
+  reveal({auto:true, correct, dunno:false, user});
+}
+function dunno(){
+  if(state.mode==="role") reveal({auto:false, dunno:true, user:""});
+  else reveal({auto:true, correct:false, dunno:true, user:""});
 }
 
-el("btnCheck").onclick=check;
-el("btnReveal").onclick=reveal;
-el("btnNext").onclick=next;
-el("btnReset").onclick=()=>loadPool(currentList());
-el("cat").onchange=()=>loadPool(currentList());
-el("mode").onchange=()=>loadPool(currentList());
-// L'interrupteur Linux ne rebat pas les cartes : il ré-affiche la carte
-// courante (et sa correction si déjà répondue) avec ou sans le volet Linux.
-el("linToggle").onchange=()=>{
-  if(idx>=pool.length) return;
-  const q=pool[idx];
-  if(answered){
-    // correction déjà affichée : on ne touche pas aux saisies, on ajuste
-    // juste la présence du volet Linux et de sa ligne dans la correction.
-    if(!linuxOn()) el("linuxField").style.display="none";
-    else if(q.linux && q.linux.none){ el("linuxField").style.display="block"; }
-    else { el("linuxField").style.display="block"; }
-    showReveal(q, el("win").className==="ok" && (!q.linux||q.linux.none||el("lin").className==="ok") ? 'ok':'reveal');
+// ---------- REVEAL ----------
+function reveal(o){
+  const it=state.queue[state.i], p=it.p, L=LAYERS[baseLayer(p.couche)];
+  const user=o.user||"";
+  const atk = p.type==="attaque" ? `<span class="atk-tag">ATTAQUE</span>` : "";
+  const facts=(p.faits_cles||[]).map(f=>`<li>${f}</li>`).join("");
+  const portRow = p.ports ? `<div class="rrow"><div class="rlbl">Port</div><div class="rval ports">${p.ports}</div></div>` : "";
+  const roleRow = `<div class="rrow"><div class="rlbl">Rôle</div><div class="rval">${p.role}</div></div>`;
+  const factsRow= `<div class="rrow"><div class="rlbl">Faits clés</div><ul class="facts">${facts}</ul></div>`;
+  const imgsRow = (p.images && p.images.length)
+    ? `<div class="rrow"><div class="rlbl">Illustration</div><div class="rimgs">${p.images.map(imgTag).join("")}</div></div>`
+    : "";
+  const tipBox  = `<div class="tip"><div class="tl">En situation</div>${p.tip}</div>`;
+  const idMeta  = `${p.acronyme}${atk} · ${p.nom_complet} · Couche ${p.couche} · ${L.nom}`;
+
+  let qRecap, hero, support;
+  if(state.mode==="role"){
+    qRecap=`Rôle de <b>${p.acronyme}</b>, couche ${p.couche} ?`;
+    hero=`<div class="answer-hero"><span class="rtag">RÉPONSE</span><div class="hero-role">${p.role}</div><div class="hero-meta">${idMeta}</div></div>`;
+    support=`${portRow}${factsRow}${imgsRow}`;
+  } else if(state.mode==="proto"){
+    qRecap=p.role;
+    hero=`<div class="answer-hero"><span class="rtag">RÉPONSE</span><div class="proto-big">${p.acronyme}${atk}</div><div class="proto-full">${p.nom_complet}</div><div class="cbadge">Couche ${p.couche} · ${L.nom}</div></div>`;
+    support=`${portRow}${factsRow}${imgsRow}`;
+  } else if(state.mode==="port"){
+    const enTls=(it.variant==="tls"&&p.port_clair.length);
+    const nums=(it.variant==="tls"?p.port_tls:p.port_clair).join(", ");
+    qRecap=`Port ${enTls?"en TLS ":""}de <b>${p.acronyme}</b> (${p.nom_complet}) ?`;
+    hero=`<div class="answer-hero"><span class="rtag">RÉPONSE</span><div class="hero-ports">${nums}</div><div class="hero-meta">${idMeta}${enTls?" · variante TLS":""}</div></div>`;
+    support=`${roleRow}${factsRow}${imgsRow}`;
+  } else { // protobyport
+    const shown=(it.variant==="tls"?p.port_tls:p.port_clair).join(", ");
+    qRecap=`Quel protocole écoute sur : <b>${shown}</b>${it.variant==="tls"?" (TLS)":""} ?`;
+    hero=`<div class="answer-hero"><span class="rtag">RÉPONSE</span><div class="proto-big">${p.acronyme}${atk}</div><div class="proto-full">${p.nom_complet}</div><div class="cbadge">Couche ${p.couche} · ${L.nom}</div></div>`;
+    support=`${portRow}${roleRow}${factsRow}${imgsRow}`;
+  }
+
+  let verdict="", judgeHtml="";
+  if(o.auto){
+    finalize(o.correct);
+    verdict = o.correct ? `<div class="verdict ok">Juste</div>` : `<div class="verdict ko">Raté</div>`;
+    judgeHtml = `<div class="judge one"><button class="jb next" id="jNext">Carte suivante ▸</button></div>`;
+  } else if(o.dunno){
+    finalize(false);
+    judgeHtml = `<div class="judge one"><button class="jb next" id="jNext">Carte suivante ▸</button></div>`;
   } else {
-    render();
+    judgeHtml = `<div class="judge"><button class="jb g" id="jGood">Bonne réponse</button><button class="jb b" id="jBad">Mauvaise réponse</button></div>`;
   }
-};
 
-// ---- Lightbox : clic sur une image pour l'agrandir (adaptee a l'ecran) ----
-window.openLightbox=function(src){
-  el("lightboxImg").src=src;
-  el("lightbox").className="lightbox show";
-};
-window.closeLightbox=function(){
-  el("lightbox").className="lightbox";
-  el("lightboxImg").src="";
-};
-el("lightbox").onclick=window.closeLightbox;
-el("btnMissed").onclick=()=>{ if(missed.length) loadPool(missed.slice(), false); };
+  document.getElementById("cardHost").innerHTML=`
+    <div class="card reveal" style="--lc:${L.v}">
+      ${verdict}
+      <div class="qrecap"><div class="lbl">On te demandait</div><div class="val">${qRecap}</div></div>
+      <div class="yourans"><div class="lbl">Ta réponse</div><div class="val ${user?"":"empty"}">${o.dunno&&!user?"Je ne sais pas":(user?escapeHtml(user):"(vide)")}</div></div>
+      ${hero}
+      <div class="support">${support}</div>
+      ${tipBox}
+      ${judgeHtml}
+    </div>`;
+  setFill((state.i+0.5)/state.queue.length);
+  const nx=document.getElementById("jNext");
+  if(nx){ nx.addEventListener("click",advance); nx.focus(); }
+  else{
+    document.getElementById("jGood").addEventListener("click",()=>{ finalize(true); advance(); });
+    document.getElementById("jBad").addEventListener("click",()=>{ finalize(false); advance(); });
+    document.getElementById("jGood").focus();
+  }
+}
+
+function showEnd(){
+  const tot=state.queue.length, g=state.good, pct=tot?Math.round(g/tot*100):0;
+  const col = pct>=80?"var(--good)":pct>=50?"var(--c3)":"var(--bad)";
+  const missedHtml = state.missed.length
+    ? `<div style="margin-top:20px;text-align:left;font-size:13px;color:var(--muted)"><b style="color:var(--txt)">À revoir :</b><br>${state.missed.map(m=>`<span style="font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;display:inline-block;margin:3px 4px 0 0;font-size:12px">${m.p.acronyme} · C${baseLayer(m.p.couche)}</span>`).join("")}</div>` : "";
+  const replayBtn = state.missed.length ? `<button class="validate" id="endReplay" style="margin-top:22px;background:var(--c4);color:#0e1116;border-color:var(--c4);font-weight:700">Rejouer les ${state.missed.length} ratées</button>` : "";
+  document.getElementById("cardHost").innerHTML=`
+    <div class="card" style="text-align:center">
+      <div style="font-family:var(--mono);font-size:44px;font-weight:700;color:${col}">${g}/${tot}</div>
+      <div style="color:var(--muted);font-size:14px;margin-top:4px">${pct}% de bonnes réponses</div>
+      ${missedHtml}${replayBtn}
+    </div>`;
+  if(state.missed.length){
+    document.getElementById("endReplay").addEventListener("click",()=>{
+      state.queue=shuffle(state.missed.slice()); state.i=0; state.good=0; state.seen=0; state.missed=[]; updateScore(); updateReplay(); showQuestion();
+    });
+  }
+}
+
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape" && el("lightbox").classList.contains("show")){ window.closeLightbox(); return; }
-  if(e.key==="Enter"){ if(answered) next(); else check(); }
+  if(document.getElementById("jNext")){ if(e.key==="Enter"){ e.preventDefault(); advance(); } return; }
+  if(!document.getElementById("jGood")) return;
+  if(e.key==="1"){ e.preventDefault(); finalize(true); advance(); }
+  if(e.key==="2"){ e.preventDefault(); finalize(false); advance(); }
 });
 
-buildCatSelect();
-loadPool(DATA);
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// ---- Lightbox : clic sur une image pour l'agrandir ----
+function readableLabel(name){
+  return name.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+}
+window.openLightbox=function(src,titre,expl){
+  document.getElementById("lightboxImg").src=src;
+  document.getElementById("lightboxCap").innerHTML=
+    `<div class="lbt">${escapeHtml(titre||"")}</div>${expl?`<div class="lbe">${escapeHtml(expl)}</div>`:""}`;
+  document.getElementById("lightbox").className="lightbox show";
+};
+window.closeLightbox=function(){
+  document.getElementById("lightbox").className="lightbox";
+  document.getElementById("lightboxImg").src="";
+};
+document.getElementById("lightbox").onclick=window.closeLightbox;
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && document.getElementById("lightbox").classList.contains("show")){ window.closeLightbox(); }
+});
+function imgTag(name){
+  const meta=IMG_META[name]||{};
+  const titre=meta.t||readableLabel(name);
+  const expl=meta.e||"";
+  const titreAttr=titre.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+  const explAttr=expl.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+  return `<img src="images/${name}.png" alt="${titreAttr}" title="${titreAttr}" onclick="openLightbox(this.src,'${titreAttr}','${explAttr}')"
+    onerror="if(!this.dataset.f){this.dataset.f=1; this.src='images/${name}.jpg';}
+             else{this.closest('.rimgs') && this.remove();}">`;
+}
+
+document.getElementById("modeSel").addEventListener("change",e=>{ state.mode=e.target.value; updateTlsVisibility(); newDeck(); });
+document.getElementById("scopeSel").addEventListener("change",e=>{ state.scope=e.target.value; newDeck(); });
+document.getElementById("tlsToggle").addEventListener("change",e=>{ state.tls=e.target.checked; newDeck(); });
+document.getElementById("shuffleBtn").addEventListener("click",newDeck);
+document.getElementById("replayBtn").addEventListener("click",()=>{ if(!state.missed.length) return; state.queue=shuffle(state.missed.slice()); state.i=0; state.good=0; state.seen=0; state.missed=[]; updateScore(); updateReplay(); showQuestion(); });
+
+updateTlsVisibility(); newDeck();
 </script>
 </body>
 </html>
